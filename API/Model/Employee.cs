@@ -40,10 +40,10 @@ namespace CandidateDetails_API.Model
         [NotMapped]
         public IFormFile? Photo { get; set; }
         public bool? isDelete { get; set; }
-        [ForeignKey("UserRoles")]
         public int RoleId { get; set; }
+        [ForeignKey("RoleId")]
+        public UserRoles Role { get; set; }
         public bool? isActive { get; set; }
-        public UserRoles? Role { get; set; }
 
         // Fields for managing password reset
         public string? ResetToken { get; set; }
