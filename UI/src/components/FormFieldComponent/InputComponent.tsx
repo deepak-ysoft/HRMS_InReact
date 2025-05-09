@@ -1,37 +1,10 @@
 import React from "react";
-
-type Option = {
-  label: string;
-  value: string;
-};
-
-type InputType =
-  | "text"
-  | "email"
-  | "password"
-  | "number"
-  | "textarea"
-  | "select"
-  | "radio"
-  | "checkbox"
-  | "file";
-
-interface CustomInputProps {
-  label: string;
-  name: string;
-  type?: InputType;
-  value: string | number | boolean | File | null | undefined; // Support string, number, boolean, File, null, or undefined
-  onChange: React.ChangeEventHandler<
-    HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-  >;
-  onBlur?: React.FocusEventHandler<
-    HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-  >;
-  required?: boolean;
-  error?: string | number | null; // Ensure error is string, number, or null only
-  placeholder?: string;
-  options?: Option[]; // Used for radio and select
-}
+import InputBaseStyle, {
+  FileInputStyle,
+  SelectBaseStyle,
+  TextareaBaseStyle,
+} from "../../utils/commonCSS";
+import { CustomInputProps } from "../../types/ICandidateFormField.types";
 
 const CustomInput: React.FC<CustomInputProps> = ({
   label,
@@ -44,9 +17,11 @@ const CustomInput: React.FC<CustomInputProps> = ({
   error,
   placeholder,
   options = [],
+  className = "",
+  rows = 3,
 }) => {
   return (
-    <div className="mb-4">
+    <div>
       <label htmlFor={name} className="block font-medium mb-1 capitalize">
         {label} {required && <span className="text-red-500">*</span>}
       </label>
@@ -59,7 +34,8 @@ const CustomInput: React.FC<CustomInputProps> = ({
           onChange={onChange}
           onBlur={onBlur}
           placeholder={placeholder}
-          className="w-full border px-3 py-2 rounded"
+          className={` ${className} ${TextareaBaseStyle}`}
+          rows={rows}
         />
       ) : type === "select" ? (
         <select
@@ -68,7 +44,7 @@ const CustomInput: React.FC<CustomInputProps> = ({
           value={value as string}
           onChange={onChange}
           onBlur={onBlur}
-          className="w-full border px-3 py-2 rounded"
+          className={` ${className} ${SelectBaseStyle}`}
         >
           <option value="">Select {label}</option>
           {options.map((opt) => (
@@ -80,7 +56,7 @@ const CustomInput: React.FC<CustomInputProps> = ({
       ) : type === "radio" ? (
         <div>
           {options.map((opt) => (
-            <label key={opt.value} className="mr-4">
+            <label key={opt.value} className={`mr-4 ${opt.style}`}>
               <input
                 type="radio"
                 name={name}
@@ -88,7 +64,7 @@ const CustomInput: React.FC<CustomInputProps> = ({
                 checked={value === opt.value}
                 onChange={onChange}
                 onBlur={onBlur}
-                className="mr-1"
+                className={` ${className} `}
               />
               {opt.label}
             </label>
@@ -103,7 +79,7 @@ const CustomInput: React.FC<CustomInputProps> = ({
             checked={value as boolean}
             onChange={onChange}
             onBlur={onBlur}
-            className="mr-2"
+            className={` ${className}`}
           />
         </div>
       ) : type === "file" ? (
@@ -114,13 +90,26 @@ const CustomInput: React.FC<CustomInputProps> = ({
             name={name}
             onChange={onChange}
             onBlur={onBlur}
-            className="w-full border px-3 py-2 rounded"
+            className={`${FileInputStyle}  ${className}`}
           />
           {value && value instanceof File && (
             <p className="text-sm mt-1">
               Selected File: {(value as File).name}
             </p>
           )}
+        </div>
+      ) : type === "search" ? (
+        <div>
+          <input
+            type={type}
+            id={name}
+            name={name}
+            value={value as string}
+            onChange={onChange}
+            onBlur={onBlur}
+            placeholder={"Search.."}
+            className={` ${className}`}
+          />
         </div>
       ) : (
         <input
@@ -131,7 +120,7 @@ const CustomInput: React.FC<CustomInputProps> = ({
           onChange={onChange}
           onBlur={onBlur}
           placeholder={placeholder}
-          className="w-full border px-3 py-2 rounded"
+          className={` ${className} ${InputBaseStyle}`}
         />
       )}
 

@@ -19,7 +19,7 @@ const Sidebar = () => {
   const isActive = (path: string) => location.pathname === `/${path}`;
 
   return (
-    <aside className="w-full lg:w-64 h-screen bg-base-200 p-4 shadow-lg">
+    <aside className="w-full lg:w-64 h-screen bg-base-100 p-4 shadow-lg">
       <ul className="space-y-2">
         {SidebarItems.map((item, index) => {
           const Icon = item.icon;

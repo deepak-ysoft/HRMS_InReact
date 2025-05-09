@@ -18,7 +18,7 @@ const MainLayout = () => {
         </aside>
 
         {/* Main Content */}
-        <main className="ml-64 flex-grow p-4">
+        <main className="ml-64 flex-grow px-10 py-6">
           <Outlet /> {/* Nested routes will render here */}
         </main>
       </div>

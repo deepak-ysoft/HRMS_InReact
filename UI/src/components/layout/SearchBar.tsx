@@ -1,13 +1,42 @@
 import React, { useState } from "react";
+import CustomInput from "../FormFieldComponent/InputComponent";
 
-const SearchBar: React.FC = () => {
-  // const [searchQuery, setSearchQuery] = useState<string>("");
+interface SearchBarProps {
+  className?: string;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
+const SearchBar: React.FC<SearchBarProps> = ({ className, onChange }) => {
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [showInput, setShowInput] = useState(false);
   const toggleSearch = () => setShowInput(!showInput);
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    if (onChange) {
+      onChange(e);
+    }
+  };
+
   return (
-    <div className="relative flex items-center space-x-2">
-      <button className="btn btn-ghost btn-circle" onClick={toggleSearch}>
+    <div className="relative">
+      {/* Search Input */}
+      <CustomInput
+        label=""
+        type="search"
+        name="searchQuery"
+        value={searchQuery}
+        onChange={handleInputChange}
+        placeholder="Search..."
+        required={false}
+        className={`${className} ml-12 ${
+          showInput ? "w-60 opacity-100" : "w-0 opacity-0 pointer-events-none"
+        }`}
+      />
+      <button
+        className="btn btn-ghost btn-circle absolute bg-[rgb(202,194,255)] text-black"
+        onClick={toggleSearch}
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           className="h-5 w-5"
@@ -24,20 +53,6 @@ const SearchBar: React.FC = () => {
           />
         </svg>
       </button>
-
-      {/* Search Input */}
-      {/* <FormField
-        type="input"
-        inputType="text"
-        name="searchQuery"
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        placeholder="Search..."
-        required={false}
-        className={`absolute right-12 transition-all duration-300 ease-in-out ${
-          showInput ? "w-48 opacity-100" : "w-0 opacity-0 pointer-events-none"
-        }`}
-      /> */}
     </div>
   );
 };

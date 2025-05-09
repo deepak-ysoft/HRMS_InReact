@@ -2,9 +2,11 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CustomInput from "../../components/FormFieldComponent/InputComponent";
 import { LoginFormFields } from "../../types/ILogin";
+import { useMutation } from "@tanstack/react-query";
+import { loginApi } from "../../services/Auth/Login.query";
 
 const initialLoginData: LoginFormFields = {
-  username: "",
+  email: "",
   password: "",
   remember: false,
 };
@@ -18,7 +20,7 @@ const LoginForm: React.FC = () => {
 
   const validate = (): typeof errors => {
     const newErrors: typeof errors = {};
-    if (!form.username) newErrors.username = "Username is required.";
+    if (!form.email) newErrors.email = "email is required.";
     if (!form.password) {
       newErrors.password = "Password is required.";
     } else if (
@@ -45,14 +47,21 @@ const LoginForm: React.FC = () => {
     }));
   };
 
+  const { mutate: loginMutate } = useMutation({
+    mutationFn: loginApi,
+    onSuccess: (data) => {
+      localStorage.setItem("token", data.token.result);
+      navigate("/candidates");
+    },
+  });
+
   const handleSubmit = (e: React.FormEvent): void => {
     e.preventDefault();
     const validationErrors = validate();
     setErrors(validationErrors);
 
     if (Object.keys(validationErrors).length === 0) {
-      console.log("Logged in:", form);
-      navigate("/add-candidate");
+      loginMutate(form);
     }
   };
 
@@ -72,20 +81,20 @@ const LoginForm: React.FC = () => {
       <div className="text-center">
         <h5 className="text-xl font-semibold">Login to Your Account</h5>
         <p className="text-sm text-gray-500">
-          Enter your username & password to login
+          Enter your email & password to login
         </p>
       </div>
 
       {/* Form */}
       <form className="space-y-4" onSubmit={handleSubmit} noValidate>
         <CustomInput
-          label="Username"
-          name="username"
-          value={form.username}
+          label="email"
+          name="email"
+          value={form.email}
           onChange={handleChange}
           required
-          error={errors.username}
-          placeholder="Your username"
+          error={errors.email}
+          placeholder="Your email"
         />
         <CustomInput
           label="Password"

@@ -1,4 +1,6 @@
 export interface Candidate {
+  [key: string]: string | number | File | null | undefined;
+  date: string;
   name: string;
   contact_No: string;
   linkedin_Profile?: string;
@@ -12,8 +14,8 @@ export interface Candidate {
   current_Location: string;
   prefer_Location: string;
   reason_For_Job_Change: string;
-  schedule_Interview?: string;
+  schedule_Interview: string;
   schedule_Interview_status?: string;
-  comments: string;
-  cv?: File | null;
+  comments?: string;
+  cv?: File | null; // Allow null and File
 }

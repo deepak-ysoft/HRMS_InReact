@@ -20,7 +20,7 @@ const Header: React.FC<HeaderProps> = ({ appName = "MyApp" }) => {
       {/* Right: Icons */}
       <div className="navbar-end space-x-2">
         {/* Search */}
-        <SearchBar />
+        {/* <SearchBar className="transition-all p-2 border rounded-xl duration-300 ease-in-out absolute right-12 bottom-5" /> */}
 
         {/* Notifications */}
         <button className="btn btn-ghost btn-circle">
