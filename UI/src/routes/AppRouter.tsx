@@ -4,6 +4,8 @@ import AddCandidate from "../pages/candidate/AddCandidate";
 import LoginForm from "../pages/sign/LoginForm";
 import AuthLayout from "../layouts/AuthLayout";
 import CandidateListPage from "../pages/candidate/CandidateList";
+import { Dashboard } from "../pages/Dashboard/Dashboard";
+import CandidateDetails from "../pages/candidate/CandidateDetails";
 
 const AppRouter = () => {
   return (
@@ -18,9 +20,13 @@ const AppRouter = () => {
 
       {/* MainLayout is used for main routes after login */}
       <Route element={<MainLayout />}>
-      <Route path="/candidates" element={<CandidateListPage />} />
-      <Route path="/add-candidate" element={<AddCandidate />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/candidates" element={<CandidateListPage />} />
+        <Route path="/candidates/add-candidate" element={<AddCandidate />} />
+        <Route path="/candidates/candidateDetails" element={<CandidateDetails />} />
       </Route>
+      {/* Redirect all other paths to login */}
+      <Route path="/*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 };

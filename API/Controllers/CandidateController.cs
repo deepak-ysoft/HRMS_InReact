@@ -78,7 +78,7 @@ namespace CandidateDetails_API.Controllers
         /// </summary>
         /// <returns>List of candidates and count of candidates</returns>
         [HttpGet("GetCandidates")]
-        public async Task<IActionResult> GetCandidates(int page=1, int pageSize=10, string sortColumn="", string sortDirection="", string SearchField = "", string SearchValue = "")
+        public async Task<IActionResult> GetCandidates(int page=1, int pageSize=10, string SearchValue = "")
         {
             try
             {   // Define the SQL output parameter
@@ -91,16 +91,13 @@ namespace CandidateDetails_API.Controllers
                 {
                     new SqlParameter("@PageNumber", SqlDbType.Int) { Value = page },
                     new SqlParameter("@PageSize", SqlDbType.Int) { Value = pageSize },
-                    new SqlParameter("@SortColumn", SqlDbType.NVarChar, 50) { Value = sortColumn },
-                    new SqlParameter("@SortOrder", SqlDbType.NVarChar, 4) { Value = sortDirection },
-                    new SqlParameter("@SearchField", SqlDbType.NVarChar, 255) { Value = (object)SearchField ?? DBNull.Value },
                     new SqlParameter("@SearchValue", SqlDbType.NVarChar, 255) { Value = (object)SearchValue ?? DBNull.Value },
                     totalRecordsParam
                 };
 
                 // Call the stored procedure using FromSqlRaw
                 var candidates = await _context.candidateDetails
-                    .FromSqlRaw("EXEC usp_GetAllcandidate @PageNumber, @PageSize, @SortColumn, @SortOrder,@SearchField,@SearchValue,@TotalRecords OUT", parameters)
+                    .FromSqlRaw("EXEC usp_GetAllcandidate @PageNumber, @PageSize, @SearchValue,@TotalRecords OUT", parameters)
                     .ToListAsync();
 
                 int totalRecords = (int)totalRecordsParam.Value;

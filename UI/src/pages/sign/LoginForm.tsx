@@ -6,8 +6,8 @@ import { useMutation } from "@tanstack/react-query";
 import { loginApi } from "../../services/Auth/Login.query";
 
 const initialLoginData: LoginFormFields = {
-  email: "",
-  password: "",
+  email: "Deepaksysoft@gmail.com",
+  password: "Deepak123@",
   remember: false,
 };
 

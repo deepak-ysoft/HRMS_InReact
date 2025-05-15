@@ -19,6 +19,7 @@ const CustomInput: React.FC<CustomInputProps> = ({
   options = [],
   className = "",
   rows = 3,
+  disabled = false,
 }) => {
   return (
     <div>
@@ -36,6 +37,7 @@ const CustomInput: React.FC<CustomInputProps> = ({
           placeholder={placeholder}
           className={` ${className} ${TextareaBaseStyle}`}
           rows={rows}
+          disabled={disabled}
         />
       ) : type === "select" ? (
         <select
@@ -45,8 +47,11 @@ const CustomInput: React.FC<CustomInputProps> = ({
           onChange={onChange}
           onBlur={onBlur}
           className={` ${className} ${SelectBaseStyle}`}
+          disabled={disabled}
         >
-          <option value="">Select {label}</option>
+          <option value="" disabled>
+            Select {label}
+          </option>
           {options.map((opt) => (
             <option key={opt.value} value={opt.value}>
               {opt.label}
@@ -65,6 +70,7 @@ const CustomInput: React.FC<CustomInputProps> = ({
                 onChange={onChange}
                 onBlur={onBlur}
                 className={` ${className} `}
+                disabled={disabled}
               />
               {opt.label}
             </label>
@@ -80,6 +86,7 @@ const CustomInput: React.FC<CustomInputProps> = ({
             onChange={onChange}
             onBlur={onBlur}
             className={` ${className}`}
+            disabled={disabled}
           />
         </div>
       ) : type === "file" ? (
@@ -91,12 +98,8 @@ const CustomInput: React.FC<CustomInputProps> = ({
             onChange={onChange}
             onBlur={onBlur}
             className={`${FileInputStyle}  ${className}`}
+            disabled={disabled}
           />
-          {value && value instanceof File && (
-            <p className="text-sm mt-1">
-              Selected File: {(value as File).name}
-            </p>
-          )}
         </div>
       ) : type === "search" ? (
         <div>
@@ -109,6 +112,7 @@ const CustomInput: React.FC<CustomInputProps> = ({
             onBlur={onBlur}
             placeholder={"Search.."}
             className={` ${className}`}
+            disabled={disabled}
           />
         </div>
       ) : (
@@ -121,6 +125,7 @@ const CustomInput: React.FC<CustomInputProps> = ({
           onBlur={onBlur}
           placeholder={placeholder}
           className={` ${className} ${InputBaseStyle}`}
+          disabled={disabled}
         />
       )}
 

@@ -1,5 +1,7 @@
 export interface Candidate {
   [key: string]: string | number | File | null | undefined;
+
+  id: string;
   date: string;
   name: string;
   contact_No: string;
@@ -18,4 +20,5 @@ export interface Candidate {
   schedule_Interview_status?: string;
   comments?: string;
   cv?: File | null; // Allow null and File
+  cvPath?: string; // Path to the CV file
 }

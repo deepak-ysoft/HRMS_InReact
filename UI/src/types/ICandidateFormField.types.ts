@@ -16,7 +16,8 @@ type InputType =
   | "file"
   | "date"
   | "datetime-local"
-  | "search";
+  | "search"
+  | "hidden";
 
 export interface CustomInputProps {
   label: string;
@@ -35,4 +36,5 @@ export interface CustomInputProps {
   options?: Option[]; // Used for radio and select
   className?: string;
   rows?: number; // Used for textarea
+  disabled?: boolean; // <-- add this line
 }

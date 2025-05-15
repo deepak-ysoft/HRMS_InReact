@@ -11,7 +11,7 @@ const SidebarItems = [
   {
     title: "Dashboard",
     icon: BiGrid,
-    path: "/dashboard",
+    path: "dashboard",
   },
   {
     title: "Forms",
@@ -35,7 +35,7 @@ const SidebarItems = [
   },
   {
     title: "Register",
-    path: "/add-candidate",
+    path: "candidates/add-candidate",
     icon: BiIdCard,
   },
   {
