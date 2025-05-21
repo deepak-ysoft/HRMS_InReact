@@ -1,12 +1,6 @@
-import {
-  BiGrid,
-  BiEditAlt,
-  BiEnvelope,
-  BiIdCard,
-  BiLogIn,
-} from "react-icons/bi";
+import { BiGrid, BiEnvelope, BiIdCard, BiLogIn } from "react-icons/bi";
 import { GoPerson } from "react-icons/go";
-
+import { MdOutlinePersonPin } from "react-icons/md";
 const SidebarItems = [
   {
     title: "Dashboard",
@@ -14,13 +8,14 @@ const SidebarItems = [
     path: "dashboard",
   },
   {
-    title: "Forms",
-    icon: BiEditAlt,
+    title: "Employee Management",
+    icon: MdOutlinePersonPin,
     subItems: [
-      { title: "Form Elements", path: "/forms/elements" },
-      { title: "Form Layouts", path: "/forms/layouts" },
-      { title: "Form Editors", path: "/forms/editors" },
-      { title: "Form Validation", path: "/forms/validation" },
+      { title: "Employee", path: "employees" },
+      { title: "Leave", path: "Leaves" },
+      { title: "Assets", path: "assets" },
+      { title: "Salary Slip", path: "salary-slip" },
+      { title: "Document Management", path: "salary-slip" },
     ],
   },
   {
@@ -34,8 +29,8 @@ const SidebarItems = [
     icon: BiEnvelope,
   },
   {
-    title: "Register",
-    path: "candidates/add-candidate",
+    title: "Candidate Management",
+    path: "candidates",
     icon: BiIdCard,
   },
   {

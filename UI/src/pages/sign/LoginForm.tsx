@@ -51,6 +51,7 @@ const LoginForm: React.FC = () => {
     mutationFn: loginApi,
     onSuccess: (data) => {
       localStorage.setItem("token", data.token.result);
+      localStorage.setItem("UserId", data.employee.empId);
       navigate("/candidates");
     },
   });

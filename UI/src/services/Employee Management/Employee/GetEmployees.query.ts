@@ -1,5 +1,6 @@
-import axiosInstance from "../../../axiosInstance";
-export const getCandidateApi = async ({
+import axiosInstance from "../../../../axiosInstance";
+
+export const getEmployees = async ({
   page = 1,
   pageSize = 10,
   searchValue = "",
@@ -11,7 +12,7 @@ export const getCandidateApi = async ({
     SearchValue: searchValue,
   });
   const response = await axiosInstance.get(
-    `api/Candidate/GetCandidates?${params.toString()}`
+    `api/Employee/GetEmployees?${params.toString()}`
   );
   return response.data;
 };

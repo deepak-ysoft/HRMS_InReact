@@ -2,8 +2,12 @@
 using CandidateDetails_API.Model;
 using CandidateDetails_API.Models;
 using DocumentFormat.OpenXml.Spreadsheet;
+using HRMS.ViewModel.Request;
+using HRMS.ViewModel.Response;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using static iText.IO.Image.Jpeg2000ImageData;
+using static PdfSharp.Capabilities.Features;
 
 namespace CandidateDetails_API.ServiceContent
 {
@@ -17,10 +21,51 @@ namespace CandidateDetails_API.ServiceContent
             _env = env;
         }
 
-        public async Task<List<Employee>> GetEmployees() // Get all employees
+        public async Task<dynamic> GetEmployees(int page, int pageSize, string SearchValue) // Get all employees
         {
-            var list = await _context.Employees.Where(x => x.isDelete == false && x.isActive == true).ToListAsync(); // Get all employees from the database
-            return list;
+            var query = _context.Employees
+            .Where(x => x.isDelete == false)
+            .AsQueryable();
+
+            if (!string.IsNullOrEmpty(SearchValue))
+            {
+                string searchTerm = SearchValue.ToLower();
+
+                query = query.Where(c =>
+                    c.empName.ToLower().Contains(searchTerm) ||
+                    c.empEmail.ToLower().Contains(searchTerm) ||
+                    c.empNumber.ToLower().Contains(searchTerm) ||
+                    c.empExperience.ToLower().Contains(searchTerm));
+            }
+
+            var totalCount = query.Count();
+
+            var list = await query
+                .Select(x => new EmployeeResponseVM
+                {
+                    empId = x.empId,
+                    empName = x.empName,
+                    empEmail = x.empEmail,
+                    empNumber = x.empNumber,
+                    empDateOfBirth = x.empDateOfBirth,
+                    empGender = x.empGender.ToString(),
+                    empJobTitle = x.empJobTitle,
+                    empExperience = x.empExperience,
+                    empDateofJoining = x.empDateofJoining,
+                    empAddress = x.empAddress,
+                    ImagePath = x.ImagePath,
+                    Role = x.Role.ToString(),
+                    isActive = x.isActive
+                })
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new
+            {
+                TotalCount = totalCount,
+                List = list
+            };
         }
         public async Task<List<Employee>> GetRequestedEmployees() // Get all employees
         {
@@ -51,10 +96,10 @@ namespace CandidateDetails_API.ServiceContent
         {
             if (employee.empId == 0) // Add new employee
             {
-                string fileName = employee.Photo?.FileName != "Default.jpg" ? UploadUserPhoto(employee.Photo) : "Default.jpg";
+                string fileName = employee.Photo?.FileName != null ? UploadUserPhoto(employee.Photo, "images/employee") : "Default.jpg";
                 var hasher = new PasswordHasher<Employee>();
                 employee.ImagePath = fileName;
-                if (employee.RoleId == 6)
+                if (employee.Role == UserRoles.Admin)
                 {
                     employee.isActive = true;
                 }
@@ -74,7 +119,7 @@ namespace CandidateDetails_API.ServiceContent
             return false;
         }
 
-        public async Task<bool> UpdateEmployee(Employee employee) // Update an employee
+        public async Task<bool> UpdateEmployee(EmployeeEditRequestVM employee) // Update an employee
         {
             if (employee.empId != 0) // Update existing employee
             {
@@ -83,24 +128,29 @@ namespace CandidateDetails_API.ServiceContent
                 if (previousEmp == null)
                     return false; // Employee not found
 
-                string fileName = employee.Photo?.FileName != "Default.jpg"
-                    ? UploadUserPhoto(employee.Photo)
+                string fileName = employee.Photo?.FileName != null 
+                    ? UploadUserPhoto(employee.Photo, "images/employee")
                     : previousEmp.ImagePath;
 
-                if (employee.Photo?.FileName != "Default.jpg")
+                if (employee.Photo?.FileName != null)
                 {
-                    await DeleteUserImageAsync(previousEmp);
+                    await DeleteUserImageAsync(previousEmp, "images/employee");
                 }
-                if (previousEmp.RoleId == 5)
-                {
-                    employee.RoleId = 5;
-                }
-                employee.ImagePath = fileName;
-                employee.empPassword = previousEmp.empPassword;
-                employee.isActive = true;
-                employee.isDelete = false;
+                previousEmp.empName = employee.empName;
+                previousEmp.empGender = employee.empGender;
+                previousEmp.empNumber = employee.empNumber;
+                previousEmp.empAddress = employee.empAddress;
+                previousEmp.empDateOfBirth = employee.empDateOfBirth;
+                previousEmp.Role = employee.Role;
+                previousEmp.empDateofJoining = employee.empDateofJoining;
+                previousEmp.empJobTitle = employee.empJobTitle;
+                previousEmp.empExperience = employee.empExperience;
 
-                _context.Employees.Update(employee);
+                previousEmp.ImagePath = fileName;
+                previousEmp.isActive = true;
+                previousEmp.isDelete = false;
+
+                _context.Employees.Update(previousEmp);
                 int result = await _context.SaveChangesAsync();
 
                 if (result > 0)
@@ -146,9 +196,9 @@ namespace CandidateDetails_API.ServiceContent
             }
             return false;
         }
-
+        //uploads/images/employee
         // To upload user image when user select image
-        private string UploadUserPhoto(IFormFile photo)
+        private string UploadUserPhoto(IFormFile photo,string path)
         {
             if (photo == null || photo.Length == 0)
             { return null; }
@@ -159,7 +209,7 @@ namespace CandidateDetails_API.ServiceContent
             // Shorten the original name if it’s longer than 10 characters
             string shortenedName = originalName.Length > 10 ? originalName.Substring(0, 10) : originalName;
 
-            string folder = Path.Combine(_env.ContentRootPath, "uploads/images/employee");
+            string folder = Path.Combine(_env.ContentRootPath, "uploads/",path);
             string fileName = $"{shortGuid}_{timestamp}_{shortenedName}{Path.GetExtension(photo.FileName)}";
             string filePath = Path.Combine(folder, fileName);
             using (var fileStream = new FileStream(filePath, FileMode.Create))
@@ -167,13 +217,13 @@ namespace CandidateDetails_API.ServiceContent
                 photo.CopyTo(fileStream);
             }
 
-            return fileName;
+            return Path.Combine("uploads/",path,fileName);
         }
-        public async Task DeleteUserImageAsync(Employee emp) // Marked as async
+        public async Task DeleteUserImageAsync(Employee emp, string path) // Marked as async
         {
             var defaultPath = "Default.jpg";
             string fileName = Path.GetFileName(emp.ImagePath);
-            var filePath = Path.Combine(_env.ContentRootPath + "\\uploads\\images\\employee\\", fileName ?? string.Empty); // Combine paths
+            var filePath = Path.Combine(_env.ContentRootPath + "\\uploads\\", path, fileName ?? string.Empty); // Combine paths
 
             // Check if the employee exists and the file path is not the default image
             if (emp != null && fileName != defaultPath && File.Exists(filePath))

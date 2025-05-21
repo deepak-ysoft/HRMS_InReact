@@ -21,61 +21,56 @@ namespace CandidateDetails_API.ServiceContent
                 employeeLeave.isApprove = false;
                 employeeLeave.startDate = employeeLeave.startDate.AddHours(12);
                 employeeLeave.endDate = employeeLeave.endDate.AddHours(12);
-                if (employeeLeave.LeaveType == null)
-                    employeeLeave.LeaveType = "Full Day";
+                employeeLeave.LeaveType = employeeLeave.LeaveType;
                 await _context.employeesleave.AddAsync(employeeLeave); // Add new employee leave
-                int result = await _context.SaveChangesAsync();
-                if (result > 0)
-                    return true;
+
+                var employee = await _context.Employees.FindAsync(employeeLeave.empId); // Find the employee
+                if (employee == null)
+                    return false;
+
+                var calendar = new Calendar(); // Create a new calendar
+                calendar.Subject = "Leave for " + employeeLeave.LeaveFor;
+                calendar.StartDate = employeeLeave.startDate; // Set the start date
+                calendar.EndDate = employeeLeave.endDate; // Set the end date
+                calendar.Description = employee.empName + " Leave";// Set the description
+
+                await _context.calendar.AddAsync(calendar); // Add the calendar
+                int res = await _context.SaveChangesAsync(); // Save the changes
+                if (res > 0)
+                {
+                    var empLeVM = new EmployeeLeaveVM(); // Create a new employee leave view model
+                    empLeVM.calId = calendar.CalId; // Set the calendar ID
+                    empLeVM.leaveId = employeeLeave.empId; // Set the employee ID
+                    await _context.employeeLeaveVM.AddAsync(empLeVM);
+                    return await _context.SaveChangesAsync() > 0;
+                }
             }
             else
             {
+                //var existingLeave = await _context.employeesleave.FirstOrDefaultAsync(x=>x.leaveId==employeeLeave.leaveId);
                 employeeLeave.isDelete = false;
                 employeeLeave.isApprove = true;
                 _context.employeesleave.Update(employeeLeave); // Update employee leave
-                int result = await _context.SaveChangesAsync();
-                if (result > 0)
+
+                var empLeave = await _context.employeeLeaveVM.FirstOrDefaultAsync(x => x.leaveId == employeeLeave.empId);
+
+                if (empLeave != null)
                 {
-                    var empLeave = await _context.employeeLeaveVM.FirstOrDefaultAsync(x => x.leaveId == employeeLeave.empId);
-
-                    if (empLeave != null)
+                    var cal = await _context.calendar.FirstOrDefaultAsync(x => x.CalId == empLeave.calId);
+                    if (cal != null)
                     {
-                        var cal = await _context.calendar.FirstOrDefaultAsync(x => x.CalId == empLeave.calId);
-                        if (cal != null)
-                        {
-                            cal.StartDate = employeeLeave.startDate; // update the leave start date
-                            cal.EndDate = employeeLeave.endDate; // update the leave end date  
-                            cal.Subject = "Leave for " + employeeLeave.LeaveFor; // update the leave subject
+                        cal.StartDate = employeeLeave.startDate; // update the leave start date
+                        cal.EndDate = employeeLeave.endDate; // update the leave end date  
+                        cal.Subject = "Leave for " + employeeLeave.LeaveFor; // update the leave subject
 
-                            _context.calendar.Update(cal);
-                            return await _context.SaveChangesAsync() > 0;
-                        }
+                        _context.calendar.Update(cal);
+                        return await _context.SaveChangesAsync() > 0;
                     }
-                    else
-                    {
-                        var employee = await _context.Employees.FindAsync(employeeLeave.empId); // Find the employee
-                        var calendar = new Calendar(); // Create a new calendar
-                        calendar.Subject = "Leave for " + employeeLeave.LeaveFor;
-                        calendar.StartDate = employeeLeave.startDate; // Set the start date
-                        calendar.EndDate = employeeLeave.endDate; // Set the end date
-                        calendar.Description = employee.empName + " Leave";// Set the description
-
-                        await _context.calendar.AddAsync(calendar); // Add the calendar
-                        int res = await _context.SaveChangesAsync(); // Save the changes
-                        if (res > 0)
-                        {
-                            var empLeVM = new EmployeeLeaveVM(); // Create a new employee leave view model
-                            empLeVM.calId = calendar.CalId; // Set the calendar ID
-                            empLeVM.leaveId = employeeLeave.empId; // Set the employee ID
-                            await _context.employeeLeaveVM.AddAsync(empLeVM);
-                            return await _context.SaveChangesAsync() > 0;
-                        }
-                    }
-                    return true;
                 }
             }
             return false;
         }
+
         public async Task<bool> DeleteEmployeeLeave(int id) // Delete an employee leave
         {
             var leave = _context.employeesleave.Find(id); // Find the employee leave

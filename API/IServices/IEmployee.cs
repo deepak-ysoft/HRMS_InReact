@@ -1,14 +1,16 @@
 ﻿using CandidateDetails_API.Model;
+using HRMS.ViewModel.Request;
+using HRMS.ViewModel.Response;
 
 namespace CandidateDetails_API.IServices
 {
     public interface IEmployee
     {
-        public Task<List<Employee>> GetEmployees();// Get all employees
+        public Task<dynamic> GetEmployees(int page, int pageSize, string SearchValue);// Get all employees
         public Task<List<Employee>> GetRequestedEmployees(); // Get all requested employees
         public Task<Employee> GetUserByEmailAsync(string email); // Get user by email
         public Task<bool> AddEmployee(Employee employee); // Add or update an employee
-        public Task<bool> UpdateEmployee(Employee employee); // Add or update an employee
+        public Task<bool> UpdateEmployee(EmployeeEditRequestVM employee); // Add or update an employee
         public Task UpdateUserAsync(Employee employee); // Update user
         public Task<Employee> GetEmployeeById(int id); // Get an employee by id
         public Task<Employee> GetUserByResetTokenAsync(string token); // Get user by reset token

@@ -24,8 +24,7 @@ const CandidateListPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [searchValue, setSearchValue] = useState("");
-  // const [filters, setFilters] = useState({});
-  console.log("page", page);
+  
   const { data, isPending, refetch } = useQuery({
     queryKey: ["getCandidate", page, pageSize, searchValue],
     queryFn: () =>
@@ -35,7 +34,6 @@ const CandidateListPage: React.FC = () => {
         searchValue,
       }),
   });
-
   const [showDelete, setShowDelete] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
@@ -159,7 +157,10 @@ const CandidateListPage: React.FC = () => {
           <div>Loading...</div>
         ) : (
           <>
-            <ListTable<Candidate> columns={columns} data={data?.data || []} />
+            <ListTable<Candidate>
+              columns={columns}
+              data={data?.data || []}
+            />
             <span className="flex justify-end items-center gap-2 mt-3 mr-8">
               <Pagination
                 page={page}

@@ -23,3 +23,7 @@
       transform: translateX(40px);
    } */
 }
+
+.table :where(th, td) {
+    padding-block: calc(0.25rem * 1.5);
+}

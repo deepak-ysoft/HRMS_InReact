@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import {  useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Candidate } from "../../types/ICandidate";
 import CustomInput from "../../components/FormFieldComponent/InputComponent";
 import { validateForm } from "./ValidateFrom";
@@ -287,14 +287,14 @@ const CandidateForm = () => {
         <Button
           type="submit"
           text={isSubmitting ? "Submitting..." : "Submit"}
-          className="bg-blue-500 text-white py-2 px-4 rounded disabled:opacity-50"
+          className="bg-blue-500 text-white mt-10 py-2 px-4 rounded disabled:opacity-50"
           disabled={isSubmitting}
         />
         <Button
           type="button"
           text="Reset"
           onClick={() => reset(defaultValues)}
-          className="bg-gray-500 text-white py-2 px-4 rounded ml-4"
+          className="bg-gray-500 text-white mt-10 py-2 px-4 rounded ml-4"
         />
       </form>
     </>

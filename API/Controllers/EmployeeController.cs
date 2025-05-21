@@ -1,5 +1,6 @@
 ﻿using CandidateDetails_API.IServices;
 using CandidateDetails_API.Model;
+using HRMS.ViewModel.Request;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -25,11 +26,11 @@ namespace CandidateDetails_API.Controllers
         /// <returns>Employee list</returns>
         [Authorize(Roles = "Admin,HR")]
         [HttpGet("GetEmployees")]
-        public async Task<IActionResult> Employees()
+        public async Task<IActionResult> Employees(int page = 1, int pageSize = 10, string SearchValue = "")
         {
             try
             {
-                var employees = await _service.GetEmployees(); // Get all employees
+                var employees = await _service.GetEmployees(page,pageSize,SearchValue); // Get all employees
                 var requestedEmployees = await _service.GetRequestedEmployees(); // Get all requested employees
                 int requestedEmpCount = requestedEmployees.Count();
                 return Ok(new { success = true, res = employees, requestres = requestedEmployees, reqEmpCount = requestedEmpCount });
@@ -80,7 +81,7 @@ namespace CandidateDetails_API.Controllers
         /// <returns>true if add or update success</returns>
         [Authorize]
         [HttpPost("UpdateEmployee")]
-        public async Task<IActionResult> UpdateEmployee([FromForm] Employee employee)
+        public async Task<IActionResult> UpdateEmployee([FromForm] EmployeeEditRequestVM employee)
         {
             if (!ModelState.IsValid)
             {

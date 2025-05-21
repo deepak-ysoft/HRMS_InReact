@@ -43,7 +43,7 @@ namespace CandidateDetails_API.Controllers
                 var result = await _service.Login(model); // Assuming Login is now async
                 if (result.Success)
                 {
-                    var employeeData = _context.Employees.Include(e => e.Role) // Include the Role navigation property
+                    var employeeData = _context.Employees // Include the Role navigation property
                         .FirstOrDefault(x => x.empEmail.ToLower() == model.email.ToLower());
 
                     if (employeeData == null)
@@ -51,7 +51,7 @@ namespace CandidateDetails_API.Controllers
                         return NotFound("Employee not found.");
                     }
 
-                    var token = _authService.GenerateJwtToken(employeeData.empId.ToString(), employeeData.Role.URole); // GenerateJwtToken returns a token
+                    var token = _authService.GenerateJwtToken(employeeData.empId.ToString(), employeeData.Role.ToString()); // GenerateJwtToken returns a token
 
                     return Ok(new
                     {

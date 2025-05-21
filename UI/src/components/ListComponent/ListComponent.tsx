@@ -28,7 +28,7 @@ export function ListTable<
 >({ columns, data }: ListTableProps<T>) {
   return (
     <div className="card z-0  ">
-      <div className="card-body pt-0">
+      <div className="card-body pt-0 ">
         <table className="table table-hover">
           <thead>
             <tr>

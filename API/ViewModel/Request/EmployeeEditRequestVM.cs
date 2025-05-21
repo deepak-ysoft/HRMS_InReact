@@ -1,9 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using CandidateDetails_API.Model;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace CandidateDetails_API.Model
+namespace HRMS.ViewModel.Request
 {
-    public class Employee
+    public class EmployeeEditRequestVM
     {
         [Key]
         public int empId { get; set; }
@@ -13,15 +14,6 @@ namespace CandidateDetails_API.Model
         [Required]
         [RegularExpression("^[a-zA-Z0-9._%+-]+@[a-zA-Z.-]+\\.[a-zA-Z]{2,}$", ErrorMessage = "Please enter a valid email address.")] // Email validation
         public string empEmail { get; set; }
-        [Required]
-        [DataType(DataType.Password)]
-        [RegularExpression("^(?=.*[a-zA-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*#?&]{8,}$", ErrorMessage = "At least 8 char, with upper, lower, num & special char.")]
-        public string  empPassword { get; set; }
-        [NotMapped]
-        [Required]
-        [Compare("empPassword")]
-        [DataType(DataType.Password)]
-        public string ? empPasswordConfirm { get; set; }
         [Required]
         public string empNumber { get; set; }
         [Required]
@@ -42,24 +34,5 @@ namespace CandidateDetails_API.Model
         public bool? isDelete { get; set; }
         public UserRoles Role { get; set; }
         public bool? isActive { get; set; }
-
-        // Fields for managing password reset
-        public string? ResetToken { get; set; }
-        public DateTime? ResetTokenExpiration { get; set; } // The expiration time for the reset token
-        public bool ResetTokenIsValid => ResetTokenExpiration > DateTime.Now; // Automatically checks if the token is still valid
-    }
-
-    public enum UserRoles
-    {
-        Admin=1,
-        HR=2,
-        Employee=3
-    }
-
-    public enum Gender
-    {
-        Male,
-        Female,
-        Other
     }
 }

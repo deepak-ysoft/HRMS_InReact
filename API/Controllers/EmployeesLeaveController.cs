@@ -1,5 +1,6 @@
 ﻿using CandidateDetails_API.IServices;
 using CandidateDetails_API.Model;
+using HRMS.ViewModel.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
@@ -47,12 +48,33 @@ namespace CandidateDetails_API.Controllers
                 var leaves = await _context.employeesleave
                     .FromSqlRaw("EXEC usp_GetAllEmployeeLeave @empId, @PageNumber, @TotalRecords OUT", parameters)
                     .ToListAsync();
+
+                var list = leaves.Select(x => new LeaveResponseVM
+                {
+                    leaveId = x.leaveId,
+                    LeaveFor = x.LeaveFor,
+                    LeaveType = x.LeaveType.ToString(),
+                    startDate = x.startDate,
+                    endDate = x.endDate,
+                    isApprove = x.isApprove ?? false
+                }).ToList();
+
                 var leaveRequests = await _context.employeesleave
-                    .FromSqlRaw("EXEC usp_GetAllEmployeeLeaveRequests" )
+                    .FromSqlRaw("EXEC usp_GetAllEmployeeLeaveRequests")
                     .ToListAsync();
 
+                var requestList = leaveRequests.Select(x => new LeaveResponseVM
+                {
+                    leaveId = x.leaveId,
+                    LeaveFor = x.LeaveFor,
+                    LeaveType = x.LeaveType.ToString(),
+                    startDate = x.startDate,
+                    endDate = x.endDate,
+                    isApprove = x.isApprove ?? false
+                }).ToList();
+
                 int totalRecords = (int)totalRecordsParam.Value;
-                return Ok(new { data = leaves, reqLeave = leaveRequests, totalCount = totalRecords });
+                return Ok(new { data = list, reqLeave = requestList, totalCount = totalRecords });
             }
             catch (Exception ex)
             {
@@ -66,7 +88,7 @@ namespace CandidateDetails_API.Controllers
         /// <param name="employeeLeave">Model object</param>
         /// <returns>true if success</returns>
         [HttpPost("AddUpdateEmployeeLeave")]
-        public async Task<IActionResult> AddUpdateEmployeeLeave(EmployeeLeave employeeLeave)
+        public async Task<IActionResult> AddUpdateEmployeeLeave([FromForm] EmployeeLeave employeeLeave)
         {
             if (!ModelState.IsValid)
             {
@@ -88,7 +110,7 @@ namespace CandidateDetails_API.Controllers
         /// </summary>
         /// <param name="id">Leave id </param>
         /// <returns>true if delete</returns>
-       [Authorize(Roles = "Admin,HR")]
+        [Authorize(Roles = "Admin,HR")]
         [HttpDelete("DeleteEmployeeLeave/{leaveId}")]
         public async Task<IActionResult> DeleteEmployeeLeave(int leaveId)
         {
