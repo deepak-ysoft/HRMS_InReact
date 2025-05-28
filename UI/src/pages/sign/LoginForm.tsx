@@ -4,6 +4,7 @@ import CustomInput from "../../components/FormFieldComponent/InputComponent";
 import { LoginFormFields } from "../../types/ILogin";
 import { useMutation } from "@tanstack/react-query";
 import { loginApi } from "../../services/Auth/Login.query";
+import { toast } from "react-toastify";
 
 const initialLoginData: LoginFormFields = {
   email: "Deepaksysoft@gmail.com",
@@ -51,8 +52,12 @@ const LoginForm: React.FC = () => {
     mutationFn: loginApi,
     onSuccess: (data) => {
       localStorage.setItem("token", data.token.result);
-      localStorage.setItem("UserId", data.employee.empId);
-      navigate("/candidates");
+      localStorage.setItem("UserId", data.data.empId);
+      <>
+        <div className="bg-black">{toast.success(data.message)}</div>
+      </>;
+
+      navigate("/dashboard");
     },
   });
 

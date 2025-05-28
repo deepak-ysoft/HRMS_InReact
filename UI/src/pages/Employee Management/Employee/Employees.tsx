@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import {
   Column,
   ListTable,
@@ -16,6 +16,7 @@ import { FaUserEdit } from "react-icons/fa";
 import { ConfirmDelete } from "../../../components/DeletionConfirm/ConfirmDelete";
 import { getEmployees } from "../../../services/Employee Management/Employee/GetEmployees.query";
 import { deleteEmployee } from "../../../services/Employee Management/Employee/DeleteEmployee.query";
+import { showToast } from "../../../utils/commonCSS/toast";
 
 const EmployeesPage: React.FC = () => {
   const navigate = useNavigate();
@@ -28,12 +29,9 @@ const EmployeesPage: React.FC = () => {
     queryKey: ["getEmployees", page, pageSize, searchValue],
     queryFn: () => getEmployees({ page, pageSize, searchValue }),
   });
-  console.log(data);
 
   const [showDelete, setShowDelete] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
-  const [toastMsg, setToastMsg] = useState<string | null>(null);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleDeleteClick = (id: number) => {
     setDeleteId(id);
@@ -42,20 +40,14 @@ const EmployeesPage: React.FC = () => {
 
   const handleDeleteConfirm = async () => {
     if (!deleteId) return;
-    try {
-      await deleteEmployee(deleteId);
-      refetch();
-      setToastMsg("Employee deleted successfully!");
-      setShowDelete(false);
-      setDeleteId(null);
-      if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(() => setToastMsg(null), 2500);
-    } catch {
-      setToastMsg("Error deleting employee!");
-      setShowDelete(false);
-      setDeleteId(null);
-      if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(() => setToastMsg(null), 2500);
+    const data = await deleteEmployee(deleteId);
+    refetch();
+    setShowDelete(false);
+    setDeleteId(null);
+    if (data.isSuccess) {
+      showToast.success(data.message);
+    } else {
+      showToast.warning(data.message);
     }
   };
 
@@ -95,7 +87,9 @@ const EmployeesPage: React.FC = () => {
       render: (row) => (
         <span
           className={`px-3 py-1 rounded-2xl text-black text-sm ${
-            row.isActive ? "bg-green-50 border border-green-300"  : "bg-red-50 border border-red-300"
+            row.isActive
+              ? "bg-green-50 border border-green-300"
+              : "bg-red-50 border border-red-300"
           }`}
         >
           {row.isActive ? "Active" : "Inactive"}
@@ -181,21 +175,6 @@ const EmployeesPage: React.FC = () => {
             onDelete={handleDeleteConfirm}
             onClose={handleDeleteCancel}
           />
-        </div>
-      )}
-      {toastMsg && (
-        <div
-          className={`fixed top-6 right-6 z-50 px-6 py-3 rounded shadow-lg transition-transform duration-500 ease-in-out
-            ${
-              toastMsg.includes("success") ? "bg-green-600" : "bg-red-600"
-            } text-white
-            animate-slide-in-fade-out`}
-          style={{
-            transform: toastMsg ? "translateY(0)" : "translateY(-40px)",
-            opacity: toastMsg ? 1 : 0,
-          }}
-        >
-          {toastMsg}
         </div>
       )}
     </>

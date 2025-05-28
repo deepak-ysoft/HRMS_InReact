@@ -11,6 +11,7 @@ import { EmployeeForm } from "../pages/Employee Management/Employee/AddEditEmplo
 import { EmployeeDetails } from "../pages/Employee Management/Employee/EmployeeDetails";
 import { LeaveForm } from "../pages/Employee Management/Leave/AddEditLeave";
 import { LeavePage } from "../pages/Employee Management/Leave/Leaves";
+import { Assets } from "../pages/Employee Management/EmployeeAssets/AssistPage";
 
 const AppRouter = () => {
   return (
@@ -40,6 +41,7 @@ const AppRouter = () => {
         />
         <Route path="/Leaves" element={<LeavePage />} />
         <Route path="/Leaves/AddEditLeave" element={<LeaveForm />} />
+        <Route path="/Assets" element={<Assets />} />
       </Route>
       {/* Redirect all other paths to login */}
       <Route path="/*" element={<Navigate to="/login" replace />} />

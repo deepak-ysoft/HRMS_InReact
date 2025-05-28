@@ -1,5 +1,6 @@
 ﻿using CandidateDetails_API.IServices;
 using CandidateDetails_API.Model;
+using HRMS.ViewModel.Response;
 using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
 using System.Globalization;
@@ -14,7 +15,7 @@ namespace CandidateDetails_API.ServiceContent
             _context = context; // Initialize the database context
         }
 
-        public async Task<bool> AddEditCandidate(Candidate candidate) // AddEditCandidate method to add or edit candidate
+        public async Task<ApiResponse<Candidate>> AddEditCandidate(Candidate candidate) // AddEditCandidate method to add or edit candidate
         {
             int res = 0;
             if (candidate.id == 0) // If candidate id is 0, then add new candidate
@@ -37,11 +38,22 @@ namespace CandidateDetails_API.ServiceContent
                 res = await _context.SaveChangesAsync();
             }
             if (res == 0) // If no record is updated
-                return false;
-            return true;
+                return new ApiResponse<Candidate>
+                {
+                    IsSuccess = false,
+                    Message = "Candidate data not Saved.",
+                    Data = candidate
+                };
+
+            return new ApiResponse<Candidate>
+            {
+                IsSuccess = true,
+                Message = "Candidate data Saved.",
+                Data = candidate
+            };
         }
 
-        public async Task<bool> AddCandidates(Stream fileStream)
+        public async Task<ApiResponse<string>> AddCandidates(Stream fileStream)
         {
             var Candidates = new List<Candidate>();
             int n = 0;
@@ -130,7 +142,19 @@ namespace CandidateDetails_API.ServiceContent
 
             await _context.candidateDetails.AddRangeAsync(Candidates);
             n = await _context.SaveChangesAsync();
-            return n > 0;
+            if (n == 0) // If no record is updated
+                return new ApiResponse<string>
+                {
+                    IsSuccess = false,
+                    Message = "Candidate data not Saved."
+
+                };
+
+            return new ApiResponse<string>
+            {
+                IsSuccess = true,
+                Message = "Candidate data Saved."
+            };
         }
 
         public static DateTime ConvertExcelDate(double excelDate)
@@ -154,43 +178,30 @@ namespace CandidateDetails_API.ServiceContent
             return candidates;
         }
 
-        public async Task<bool> deleteCanndidate(int id)  // deleteCanndidate method to delete candidate
+        public async Task<ApiResponse<string>> deleteCanndidate(int id)  // deleteCanndidate method to delete candidate
         {
             var candidate = await _context.candidateDetails.Where(x => x.id == id).FirstOrDefaultAsync(); // Get candidate by id
-            var candidateObj = new Candidate // Create a new candidate object
+            new ApiResponse<string>
             {
-                id = candidate.id,
-                date = candidate.date,
-                name = candidate.name,
-                contact_No = candidate.contact_No,
-                linkedin_Profile = candidate.linkedin_Profile,
-                email_ID = candidate.email_ID,
-                roles = candidate.roles,
-                experience = candidate.experience,
-                skills = candidate.skills,
-                ctc = candidate.ctc,
-                etc = candidate.etc,
-                notice_Period = candidate.notice_Period,
-                current_Location = candidate.current_Location,
-                prefer_Location = candidate.prefer_Location,
-                reason_For_Job_Change = candidate.reason_For_Job_Change,
-                schedule_Interview = candidate.schedule_Interview,
-                schedule_Interview_status = candidate.schedule_Interview_status,
-                comments = candidate.comments,
-                cvPath = candidate.cvPath,
-                isDelete = true,
+                IsSuccess = false,
+                Message = "Candidate not found."
             };
-            var existingEntity = _context.ChangeTracker.Entries<Candidate>().FirstOrDefault(e => e.Entity.id == candidate.id); // Get existing candidate
 
-            if (existingEntity != null)     // If existing candidate is not null
-            {
-                _context.Entry(existingEntity.Entity).State = EntityState.Detached; // Detach the existing candidate
-            }
-            _context.Entry(candidateObj).State = EntityState.Modified; // Mark the candidate as modified
+            candidate.isDelete = true;
+            _context.Entry(candidate).State = EntityState.Modified; // Mark the candidate as modified
             var res = await _context.SaveChangesAsync();
+
             if (res == 0) // If no record is updated
-                return false;
-            return true;
+                return new ApiResponse<string>
+                {
+                    IsSuccess = false,
+                    Message = "Candidate deletion failed."
+                };
+            return new ApiResponse<string>
+            {
+                IsSuccess = true,
+                Message = "Candidate deleted Successfully."
+            };
         }
     }
 }

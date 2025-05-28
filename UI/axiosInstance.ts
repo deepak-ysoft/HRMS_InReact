@@ -1,11 +1,16 @@
-// axiosInstance.ts
 import axios, {
   AxiosError,
   AxiosInstance,
   InternalAxiosRequestConfig,
 } from "axios";
-// import { removeToken, navigationTo } from "../src/helper/helper";
-// import { ReactToastify } from "./shared/utils";
+// import { ToastMessage } from "./src/components/ToastMsgComponent/toastMessageComponent";
+import { toast } from "react-toastify";
+
+interface ApiErrorResponse {
+  IsSuccess: false;
+  Message: string;
+  Errors: string[];
+}
 
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -19,22 +24,61 @@ axiosInstance.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error: AxiosError) => Promise.reject(error)
 );
 
 axiosInstance.interceptors.response.use(
   (response) => response,
-  (error: AxiosError<any>) => {
+  (error: AxiosError<ApiErrorResponse>) => {
     const status = error.response?.status;
-    const message = error.response?.data?.message;
+    const data = error.response?.data;
 
-    if (status === 401) {
-    } else if (status === 403) {
-    } else if (status === 400) {
-      if (Array.isArray(message)) {
-      } else if (typeof message === "string") {
-      } else {
+    if (status) {
+      switch (status) {
+        case 400:
+          if (data?.Errors && Array.isArray(data.Errors)) {
+            data.Errors.map((err: string) => {
+              toast.error(err);
+            });
+          } else if (data?.Message) {
+            toast.error(data.Message);
+          }
+          break;
+
+        case 401:
+          return toast.error(
+            data?.Message || "Unauthorized access. Please log in again."
+          );
+          break;
+
+        case 403:
+          toast.error(data?.Message || "Access Denied");
+          break;
+
+        case 404:
+          toast.error(data?.Message || "Resource Not Found");
+          break;
+
+        case 500:
+          if (data?.Errors && Array.isArray(data.Errors)) {
+            data.Errors.map((err: string) => {
+              return toast.error(err);
+            });
+          } else if (data?.Message) {
+            return toast.error(data.Message);
+          }
+          break;
+
+        default:
+          return toast.error(
+            `Unexpected error (status ${status}):` + data?.Message
+          );
+          break;
       }
+    } else if (error.message === "Network Error") {
+      toast.error("Network error: Please check your internet connection.");
+    } else {
+      toast.error("Unhandled error: " + error.message);
     }
 
     return Promise.reject(error);

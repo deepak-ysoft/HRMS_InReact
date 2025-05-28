@@ -184,8 +184,15 @@ namespace HRMS.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("EmpId")
                         .HasColumnType("int");
+
+                    b.Property<string>("ImagePath")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("AssetId");
 
@@ -232,8 +239,8 @@ namespace HRMS.Migrations
                     b.Property<DateTime>("endDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool?>("isApprove")
-                        .HasColumnType("bit");
+                    b.Property<int?>("isApprove")
+                        .HasColumnType("int");
 
                     b.Property<bool>("isDelete")
                         .HasColumnType("bit");

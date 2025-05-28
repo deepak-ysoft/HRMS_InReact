@@ -56,7 +56,7 @@ namespace CandidateDetails_API.Controllers
                     LeaveType = x.LeaveType.ToString(),
                     startDate = x.startDate,
                     endDate = x.endDate,
-                    isApprove = x.isApprove ?? false
+                    isApprove = x.isApprove.ToString()
                 }).ToList();
 
                 var leaveRequests = await _context.employeesleave
@@ -70,11 +70,11 @@ namespace CandidateDetails_API.Controllers
                     LeaveType = x.LeaveType.ToString(),
                     startDate = x.startDate,
                     endDate = x.endDate,
-                    isApprove = x.isApprove ?? false
+                    isApprove = x.isApprove.ToString()
                 }).ToList();
 
                 int totalRecords = (int)totalRecordsParam.Value;
-                return Ok(new { data = list, reqLeave = requestList, totalCount = totalRecords });
+                return Ok(new { IsSuccess = true, Data = list, reqLeave = requestList, totalCount = totalRecords });
             }
             catch (Exception ex)
             {
@@ -91,13 +91,23 @@ namespace CandidateDetails_API.Controllers
         public async Task<IActionResult> AddUpdateEmployeeLeave([FromForm] EmployeeLeave employeeLeave)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState); // Return bad request if the model state is invalid
-            }
+
             try
             {
                 var result = await _employeeLeave.AddUpdateEmployeeLeave(employeeLeave); // Add or update an employee leave
-                return Ok(new { success = result });
+                if (!result)
+                    return Ok(new ApiResponse<string>
+                    {
+                        IsSuccess = false,
+                        Message = "Failed to save data."
+                    });
+
+                return Ok(new ApiResponse<string>
+                {
+                    IsSuccess = true,
+                    Message = "Data Saved Successfully."
+                });
             }
             catch (Exception ex)
             {
@@ -117,7 +127,7 @@ namespace CandidateDetails_API.Controllers
             try
             {
                 var result = await _employeeLeave.DeleteEmployeeLeave(leaveId); // Delete an employee leave
-                return Ok(new { success = result });
+                return Ok(result);
             }
             catch (Exception ex)
             {

@@ -1,4 +1,5 @@
-import { BiGrid, BiEnvelope, BiIdCard, BiLogIn } from "react-icons/bi";
+import { BiGrid, BiEnvelope, BiIdCard, BiLogOut } from "react-icons/bi";
+import { FaFileAlt, FaLaptop, FaUserEdit, FaUserTie } from "react-icons/fa";
 import { GoPerson } from "react-icons/go";
 import { MdOutlinePersonPin } from "react-icons/md";
 const SidebarItems = [
@@ -11,11 +12,11 @@ const SidebarItems = [
     title: "Employee Management",
     icon: MdOutlinePersonPin,
     subItems: [
-      { title: "Employee", path: "employees" },
-      { title: "Leave", path: "Leaves" },
-      { title: "Assets", path: "assets" },
-      { title: "Salary Slip", path: "salary-slip" },
-      { title: "Document Management", path: "salary-slip" },
+      { title: "Employee", path: "employees", icon: FaUserTie },
+      { title: "Leave", path: "Leaves", icon: FaUserEdit },
+      { title: "Assets", path: "Assets", icon: FaLaptop },
+      { title: "Salary Slip", path: "salary-slip", icon: FaFileAlt },
+      { title: "Document Management", path: "salary-slip", icon: FaFileAlt },
     ],
   },
   {
@@ -34,9 +35,9 @@ const SidebarItems = [
     icon: BiIdCard,
   },
   {
-    title: "Login",
+    title: "Logout",
     path: "login",
-    icon: BiLogIn,
+    icon: BiLogOut,
   },
 ];
 

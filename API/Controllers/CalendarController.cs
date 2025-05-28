@@ -1,6 +1,8 @@
 ﻿using CandidateDetails_API.IServices;
 using CandidateDetails_API.Model;
 using CandidateDetails_API.Models;
+using HRMS.ViewModel.Request;
+using HRMS.ViewModel.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -40,12 +42,16 @@ namespace CandidateDetails_API.Controllers
                 }).ToListAsync();
 
                 // Return the calendar as JSON
-                return Ok(calendar);
+                return Ok(new ApiResponse<dynamic>
+                {
+                    IsSuccess = true,
+                    Message = "Calendar retrieved successfully.",
+                    Data = calendar
+                });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                // Log exception and return a meaningful error response
-                return StatusCode(500, new { message = "An error occurred while fetching the calendar", error = ex.Message });
+                throw;
             }
         }
 
@@ -65,12 +71,19 @@ namespace CandidateDetails_API.Controllers
                 var bdayDescription = await _context.calendar.Where(x => x.Subject.Trim() == "Birthday").OrderBy(x => x.StartDate).ToListAsync();
 
                 // Return the calendar as JSON
-                return Ok(new { hd = hdayDescription, bd = bdayDescription });
+                return Ok(new ApiResponse<dynamic>
+                {
+                    IsSuccess = true,
+                    Message = "Calendar retrieved successfully.",
+                    Data = {
+                        hd = hdayDescription,
+                        bd = bdayDescription
+                    }
+                });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                // Log exception and return a meaningful error response
-                return StatusCode(500, new { message = "An error occurred while fetching the calendar", error = ex.Message });
+                throw;
             }
         }
 
@@ -81,12 +94,10 @@ namespace CandidateDetails_API.Controllers
         /// <returns>true or false</returns>
         [Authorize(Roles = "Admin,HR")]
         [HttpPost("CreateEditCalendar")] // Use the appropriate HTTP method for creating a resource
-        public async Task<IActionResult> CreateEditCalendar([FromBody] Calendar model)
+        public async Task<IActionResult> CreateEditCalendar([FromBody] CalendarRequestVM model)
         {
-            if (model == null)
-            {
-                return BadRequest("Calendar model is null");
-            }
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState); // Return bad request if model state is invalid
 
             if (model.CalId == 0 || model.CalId == null) //Create calendar if calendar id is 0
             {
@@ -117,10 +128,18 @@ namespace CandidateDetails_API.Controllers
             int n = await _context.SaveChangesAsync(); // Use SaveChangesAsync for asynchronous operation
             if (n > 0)
             {
-                return Ok(true);
+                return Ok(new ApiResponse<string>
+                {
+                    IsSuccess = true,
+                    Message = "Calendar saved successfully."
+                });
             }
 
-            return StatusCode(500, "An error occurred while saving the calendar");
+            return Ok(new ApiResponse<string>
+            {
+                IsSuccess = false,
+                Message = "Failed to save Calendar."
+            });
         }
 
         /// <summary>
@@ -141,9 +160,19 @@ namespace CandidateDetails_API.Controllers
             var calendar = await _service.getCalendarByIdAsync(id);
             if (calendar == null)
             {
-                return NotFound(); // Handle the case when the calendar doesn't exist
+                return Ok(new ApiResponse<string>
+                {
+                    IsSuccess = false,
+                    Message = "Calendar not found."
+                }); // Handle the case when the calendar doesn't exist
             }
-            return Ok(new { data = calendar, isUsed = isUsed });
+            return Ok(new
+            {
+                IsSuccess = true,
+                Message = "Calendar retrieved successfully.",
+                Data = calendar,
+                isUsed = isUsed
+            });
         }
 
         /// <summary>
@@ -158,12 +187,10 @@ namespace CandidateDetails_API.Controllers
             var calendar = await _context.calendar.FirstOrDefaultAsync(a => a.CalId == request.Id);
             if (calendar != null)
             {
-                //calendar.StartDate = request.NewStart.AddHours(5).AddMinutes(30);
-                //calendar.EndDate = request.NewEnd.AddHours(5).AddMinutes(30); 
                 var birthVM = await _context.employeeBirthdays.FirstOrDefaultAsync(x => x.calId == calendar.CalId);
                 var leaveVM = await _context.employeeLeaveVM.FirstOrDefaultAsync(x => x.calId == calendar.CalId);
 
-                if (birthVM != null|| leaveVM!=null)
+                if (birthVM != null || leaveVM != null)
                 {
                     return Ok(false);
                 }
@@ -171,9 +198,17 @@ namespace CandidateDetails_API.Controllers
                 calendar.EndDate = request.NewEnd;
 
                 await _context.SaveChangesAsync();
-                return Ok(true); // Return a success response
+                return Ok(new ApiResponse<string>
+                {
+                    IsSuccess = true,
+                    Message = "Calendar updated successfully."
+                }); // Return a success response
             }
-            return NotFound(); // Return a not found response if the calendar doesn't exist
+            return Ok(new ApiResponse<string>
+            {
+                IsSuccess = false,
+                Message = "Calendar not found."
+            }); // Return a not found response if the calendar doesn't exist
         }
 
         // To delete a Calendar
@@ -184,9 +219,17 @@ namespace CandidateDetails_API.Controllers
             var calendar = await _service.DeleteCalendarByIdAsync(id);
             if (calendar)
             {
-                return Ok(true);
+                return Ok(new ApiResponse<string>
+                {
+                    IsSuccess = true,
+                    Message = "Calendar deleted successfully."
+                });
             }
-            return Ok(false);
+            return Ok(new ApiResponse<string>
+            {
+                IsSuccess = false,
+                Message = "Calendar not found or could not be deleted."
+            });
         }
     }
 }

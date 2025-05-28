@@ -1,6 +1,7 @@
 ﻿using CandidateDetails_API.IServices;
 using CandidateDetails_API.Model;
 using CandidateDetails_API.Models;
+using HRMS.ViewModel.Response;
 using Microsoft.EntityFrameworkCore;
 
 namespace CandidateDetails_API.ServiceContent
@@ -18,7 +19,7 @@ namespace CandidateDetails_API.ServiceContent
             if (employeeLeave.leaveId == 0)
             {
                 employeeLeave.isDelete = false;
-                employeeLeave.isApprove = false;
+                employeeLeave.isApprove = ApproveStatus.Panding;
                 employeeLeave.startDate = employeeLeave.startDate.AddHours(12);
                 employeeLeave.endDate = employeeLeave.endDate.AddHours(12);
                 employeeLeave.LeaveType = employeeLeave.LeaveType;
@@ -49,7 +50,7 @@ namespace CandidateDetails_API.ServiceContent
             {
                 //var existingLeave = await _context.employeesleave.FirstOrDefaultAsync(x=>x.leaveId==employeeLeave.leaveId);
                 employeeLeave.isDelete = false;
-                employeeLeave.isApprove = true;
+                employeeLeave.isApprove = employeeLeave.isApprove;
                 _context.employeesleave.Update(employeeLeave); // Update employee leave
 
                 var empLeave = await _context.employeeLeaveVM.FirstOrDefaultAsync(x => x.leaveId == employeeLeave.empId);
@@ -71,16 +72,26 @@ namespace CandidateDetails_API.ServiceContent
             return false;
         }
 
-        public async Task<bool> DeleteEmployeeLeave(int id) // Delete an employee leave
+        public async Task<ApiResponse<string>> DeleteEmployeeLeave(int id) // Delete an employee leave
         {
             var leave = _context.employeesleave.Find(id); // Find the employee leave
             if (leave != null) // If the employee leave is found
             {
                 leave.isDelete = true;
                 _context.employeesleave.Update(leave); // Remove the employee leave
-                return await _context.SaveChangesAsync() > 0;
+                int result = await _context.SaveChangesAsync();
+                if (result == 0)
+                    return new ApiResponse<string>
+                    {
+                        IsSuccess = false,
+                        Message = "Failed to Delete data."
+                    };
             }
-            return false;
+            return new ApiResponse<string>
+            {
+                IsSuccess = true,
+                Message = "Data Deleted Successfully."
+            };
         }
     }
 }

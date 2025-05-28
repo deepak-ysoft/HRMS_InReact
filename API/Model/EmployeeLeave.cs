@@ -16,7 +16,7 @@ namespace CandidateDetails_API.Model
         public DateTime endDate { get; set; }
         public int empId { get; set; }
         public bool isDelete { get; set; }
-        public bool? isApprove { get; set; }
+        public ApproveStatus? isApprove { get; set; } = ApproveStatus.Panding;
     }
     public enum LeaveType
     {
@@ -28,5 +28,12 @@ namespace CandidateDetails_API.Model
 
         [Display(Name = "Evening Half Day")]
         EveningHalfDay
+    }
+
+    public enum ApproveStatus
+    {
+        Panding,
+        Approved,
+        Rejected
     }
 }

@@ -1,6 +1,7 @@
 ﻿using CandidateDetails_API.IServices;
 using CandidateDetails_API.Model;
 using HRMS.ViewModel.Request;
+using HRMS.ViewModel.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -30,10 +31,10 @@ namespace CandidateDetails_API.Controllers
         {
             try
             {
-                var employees = await _service.GetEmployees(page,pageSize,SearchValue); // Get all employees
+                var employees = await _service.GetEmployees(page, pageSize, SearchValue); // Get all employees
                 var requestedEmployees = await _service.GetRequestedEmployees(); // Get all requested employees
                 int requestedEmpCount = requestedEmployees.Count();
-                return Ok(new { success = true, res = employees, requestres = requestedEmployees, reqEmpCount = requestedEmpCount });
+                return Ok(new { IsSuccess = true, res = employees, requestres = requestedEmployees, reqEmpCount = requestedEmpCount });
             }
             catch (Exception ex)
             {
@@ -59,14 +60,11 @@ namespace CandidateDetails_API.Controllers
                 var emailExists = await _context.Employees.AnyAsync(u => u.empEmail.ToLower() == employee.empEmail.ToLower()); // To check duplicate emails.
                 if (emailExists)
                 {
-                    return Ok(new { success = false, message = "Duplicate Email" });
+                    return BadRequest(new ApiResponse<string> { IsSuccess = true, Message = "Duplicate Email" });
                 }
                 var result = await _service.AddEmployee(employee); // Add or update an employee
-                if (result)
-                {
-                    return Ok(new { success = true, message = "Employee added successfully" });
-                }
-                return Ok(new { success = false, message = "Failed to add employee" });
+
+                return Ok(result);
             }
             catch (Exception ex)
             {
@@ -96,11 +94,7 @@ namespace CandidateDetails_API.Controllers
                 }
                 var result = await _service.UpdateEmployee(employee); // Add or update an employee
                 var employeeData = await _service.GetEmployeeById(employee.empId);
-                if (result)
-                {
-                    return Ok(new { success = true, employee = employeeData, message = "Employee updated successfully" });
-                }
-                return Ok(new { success = false, message = "Failed to update employee" });
+                return Ok(result);
             }
             catch (Exception ex)
             {
@@ -116,9 +110,9 @@ namespace CandidateDetails_API.Controllers
                 var employee = await _service.GetEmployeeById(empId); // Get an employee by ID
                 if (employee != null)
                 {
-                    return Ok(new { success = true, employee = employee });
+                    return Ok(new ApiResponse<Employee> { IsSuccess = true, Message = "Employee Details Retrieved.", Data = employee });
                 }
-                return Ok(new { success = false, message = "Employee not found" });
+                return Ok(new ApiResponse<Employee> { IsSuccess = true, Message = "Employee not found" });
             }
             catch (Exception ex)
             {
@@ -140,11 +134,7 @@ namespace CandidateDetails_API.Controllers
             try
             {
                 var result = await _service.DeleteEmployee(empId); // Delete an employee
-                if (result)
-                {
-                    return Ok(new { success = true, message = "Employee deleted successfully" });
-                }
-                return Ok(new { success = false, message = "Failed to delete employee" });
+                return Ok(result);
             }
             catch (Exception ex)
             {
@@ -155,15 +145,24 @@ namespace CandidateDetails_API.Controllers
         /// <summary>
         /// Get all assets of an employee
         /// </summary>
-        /// <param name="empId">Employee id to get assets</param>
         /// <returns>Assets list</returns>
-        [HttpGet("GetEmployeeAssets/{empId}")]
-        public async Task<IActionResult> GetEmployeeAssets(int empId)
+        [HttpGet("GetEmployeeAssets")]
+        public async Task<IActionResult> GetEmployeeAssets(int empId, int page = 1)
         {
             try
             {
-                var employeeAssets = await _service.GetEmployeeAssets(empId); // Get employee assets
-                return Ok(new { success = true, employeeAssets = employeeAssets });
+                const int pageSize = 10;
+                var allAssets = await _service.GetEmployeeAssets(empId); // This should return IQueryable or IEnumerable
+
+                var pagedAssets = allAssets
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+
+                var totalCount = allAssets.Count();
+
+
+                return Ok(new { IsSuccess = true, Data = pagedAssets, Message = "Employee Details Retrieved.", totalCount = totalCount });
             }
             catch (Exception ex)
             {
@@ -177,20 +176,19 @@ namespace CandidateDetails_API.Controllers
         /// <param name="employeeAsset"> EmployeeAsset model object</param>
         /// <returns>Return tru if success</returns>
         [HttpPost("AddUpdateEmployeeAssets")]
-        public async Task<IActionResult> AddUpdateEmployeeAssets([FromBody] EmployeeAsset employeeAsset)
+        public async Task<IActionResult> AddUpdateEmployeeAssets([FromForm] EmployeeAssetsResponseVM employeeAsset)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
+            
             try
             {
                 var result = await _service.AddUpdateEmployeeAssets(employeeAsset); // Add and update an asset to an employee
                 if (result)
                 {
-                    return Ok(new { success = true, message = "Asset added/updated successfully" });
+                    return Ok(new ApiResponse<string>{ IsSuccess = true, Message = "Asset added/updated successfully" });
                 }
-                return Ok(new { success = false, message = "Failed to add asset" });
+                return Ok(new ApiResponse<string> { IsSuccess = false, Message = "Failed to add asset" });
             }
             catch (Exception ex)
             {
@@ -211,9 +209,9 @@ namespace CandidateDetails_API.Controllers
                 var result = await _service.DeleteEmployeeAssets(assetId); // Delete all assets of an employee
                 if (result)
                 {
-                    return Ok(new { success = true, message = "Asset deleted successfully" });
+                    return Ok(new ApiResponse<string> { IsSuccess = true, Message = "Asset deleted successfully" });
                 }
-                return Ok(new { success = false, message = "Failed to delete asset" });
+                return Ok(new ApiResponse<string> { IsSuccess = false, Message = "Failed to delete asset" });
             }
             catch (Exception ex)
             {

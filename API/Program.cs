@@ -10,30 +10,35 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-// Configure services
+
+// Register IHttpContextAccessor for use in middleware
+builder.Services.AddHttpContextAccessor();
+
+// Configure request size limits
 builder.Services.Configure<FormOptions>(options =>
 {
     options.MultipartBodyLengthLimit = 104857600; // 100 MB
 });
-
 builder.Services.Configure<IISServerOptions>(options =>
 {
     options.MaxRequestBodySize = 104857600; // 100 MB
 });
-// Add services to the container.
-builder.Services.AddScoped<ICandidateService, CandidateServiceContent>(); // Register the service
-builder.Services.AddScoped<ICalendarService, CalendarServiceContent>(); // Register the service
-builder.Services.AddScoped<IEmployee, EmployeeServiceContent>(); // Register the service
-builder.Services.AddScoped<IEmployeeLeave, EmployeeLeaveServiceContent>(); // Register the service
-builder.Services.AddScoped<IAccount, AccountServiceContent>(); // Register the service
-builder.Services.AddScoped<IAuthService, AuthServiceContent>(); // Register the service
-builder.Services.AddScoped<IEmailService, EmailService>(); // Register the service
-builder.Services.AddScoped<ILeadsService, LeadsServiceContent>(); // Register the service
+
+// Register services
+builder.Services.AddScoped<ICandidateService, CandidateServiceContent>();
+builder.Services.AddScoped<ICalendarService, CalendarServiceContent>();
+builder.Services.AddScoped<IEmployee, EmployeeServiceContent>();
+builder.Services.AddScoped<IEmployeeLeave, EmployeeLeaveServiceContent>();
+builder.Services.AddScoped<IAccount, AccountServiceContent>();
+builder.Services.AddScoped<IAuthService, AuthServiceContent>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<ILeadsService, LeadsServiceContent>();
 builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
 builder.Services.AddTransient<EmailService>();
+
+// Add controllers and Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 builder.Services.AddSwaggerGen(c =>
 {
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -53,12 +58,13 @@ builder.Services.AddSwaggerGen(c =>
                     Type=ReferenceType.SecurityScheme,
                     Id = "Bearer"
                 }
-            },Array.Empty<string>()
+            },
+            Array.Empty<string>()
         }
     });
 });
 
-// Add JWT Authentication
+// Configure JWT Authentication
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -77,11 +83,11 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = jwtSettings["Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]))
     };
-
 });
+
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("Admin", policy => policy.RequireRole("Admin")); // Define Admin role policy
+    options.AddPolicy("Admin", policy => policy.RequireRole("Admin"));
 });
 
 // Add DbContext
@@ -90,7 +96,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefConn"));
 });
 
-// CORS configuration
+// Configure CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", builder =>
@@ -103,42 +109,50 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+// Enable CORS
 app.UseCors("AllowAll");
-if (!Directory.Exists(Path.Combine(builder.Environment.ContentRootPath, "uploads")))
-{
-    Directory.CreateDirectory(Path.Combine(builder.Environment.ContentRootPath, "uploads"));
-}
-if (!Directory.Exists(Path.Combine(builder.Environment.ContentRootPath, "CandidateCV")))
-{
-    Directory.CreateDirectory(Path.Combine(builder.Environment.ContentRootPath, "CandidateCV"));
-}
+
+// Use custom exception middleware
+app.UseMiddleware<ExceptionMiddleware>();
+
+// Ensure static file directories exist
+string uploadsPath = Path.Combine(builder.Environment.ContentRootPath, "uploads");
+string candidateCvPath = Path.Combine(builder.Environment.ContentRootPath, "CandidateCV");
+
+if (!Directory.Exists(uploadsPath))
+    Directory.CreateDirectory(uploadsPath);
+
+if (!Directory.Exists(candidateCvPath))
+    Directory.CreateDirectory(candidateCvPath);
+
+// Serve static files
 app.UseStaticFiles(); // General static files
+
 app.UseStaticFiles(new StaticFileOptions
 {
-    FileProvider = new PhysicalFileProvider(
-        Path.Combine(builder.Environment.ContentRootPath, "uploads")),
+    FileProvider = new PhysicalFileProvider(uploadsPath),
     RequestPath = "/uploads"
 });
-// Configure the HTTP request pipeline.
 app.UseStaticFiles(new StaticFileOptions
 {
-    FileProvider = new PhysicalFileProvider(
-    Path.Combine(builder.Environment.ContentRootPath, "CandidateCV")),
+    FileProvider = new PhysicalFileProvider(candidateCvPath),
     RequestPath = "/CandidateCV"
 });
 
+// Swagger
 app.UseSwagger();
 app.UseSwaggerUI();
 
-
+// HTTPS redirection
 app.UseHttpsRedirection();
 
-// Enable CORS (Allow all origins)
-app.UseCors("AllowAllOrigins");
-
-app.UseAuthentication();  // Add Authentication middleware
+// Authentication & Authorization
+app.UseAuthentication();
 app.UseAuthorization();
 
+// Map controller routes
 app.MapControllers();
 
+// Run the app
 app.Run();

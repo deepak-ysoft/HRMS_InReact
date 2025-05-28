@@ -1,5 +1,6 @@
 ﻿using CandidateDetails_API.IServices;
 using CandidateDetails_API.Model;
+using HRMS.ViewModel.Response;
 using iText.Layout.Properties;
 using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
@@ -15,10 +16,9 @@ namespace CandidateDetails_API.ServiceContent
         {
             _context = context; // Initialize the database context
         }
-        public async Task<bool> AddLeads(Stream fileStream)
+        public async Task<ApiResponse<string>> AddLeads(Stream fileStream)
         {
             var leads = new List<Leads>();
-            int n = 0;
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial; // Required for EPPlus
 
             using (var package = new ExcelPackage(fileStream)) // Open the excel file
@@ -77,17 +77,28 @@ namespace CandidateDetails_API.ServiceContent
                     leads.Add(lead);
                 }
             }
-
             await _context.leads.AddRangeAsync(leads); // Save to DB
-            n = await _context.SaveChangesAsync();
-            return n > 0;
+
+            int result = await _context.SaveChangesAsync();
+            if (result > 0)
+                return new ApiResponse<string>
+                {
+                    IsSuccess = true,
+                    Message = "Data Saved Successfully."
+                };
+
+            return new ApiResponse<string>
+            {
+                IsSuccess = true,
+                Message = "Failed To Save Data."
+            };
         }
 
 
-        public async Task<bool> AddEditLeads(Leads lead)
+        public async Task<ApiResponse<Leads>> AddEditLeads(Leads lead)
         {
             int res = 0;
-            if (lead.LeadsId == 0 || lead.LeadsId==null) // If leads id is 0, then add new leads
+            if (lead.LeadsId == 0 || lead.LeadsId == null) // If leads id is 0, then add new leads
             {
                 lead.isDelete = false;
                 await _context.leads.AddAsync(lead); // Add leads to database
@@ -106,17 +117,28 @@ namespace CandidateDetails_API.ServiceContent
                 _context.Entry(lead).State = EntityState.Modified; // Mark the leads as modified
                 res = await _context.SaveChangesAsync();
             }
-            if (res == 0) // If no record is updated
-                return false;
-            return true;
+            if (res > 0)
+                return new ApiResponse<Leads>
+                {
+                    IsSuccess = true,
+                    Message = "Data Saved Successfully.",
+                    Data = lead
+                };
+
+            return new ApiResponse<Leads>
+            {
+                IsSuccess = true,
+                Message = "Failed To Save Data.",
+                Data = lead
+            };
         }
 
-        public async Task<bool> deleteLeads(int id)
+        public async Task<ApiResponse<string>> deleteLeads(int id)
         {
             var leads = await _context.leads.Where(x => x.LeadsId == id).FirstOrDefaultAsync(); // Get leads by id
 
             leads.isDelete = true;
-            
+
             var existingEntity = _context.ChangeTracker.Entries<Leads>().FirstOrDefault(e => e.Entity.LeadsId == leads.LeadsId); // Get existing leads
 
             if (existingEntity != null)     // If existing leads is not null
@@ -124,11 +146,19 @@ namespace CandidateDetails_API.ServiceContent
                 _context.Entry(existingEntity.Entity).State = EntityState.Detached; // Detach the existing leads
             }
             _context.Entry(leads).State = EntityState.Modified; // Mark the leads as modified
-            var res = await _context.SaveChangesAsync();
-            if (res == 0) // If no record is updated
-                return false;
-            return true;
-        }
+            var result = await _context.SaveChangesAsync();
+            if (result > 0)
+                return new ApiResponse<string>
+                {
+                    IsSuccess = true,
+                    Message = "Data Deleted Successfully."
+                };
 
+            return new ApiResponse<string>
+            {
+                IsSuccess = true,
+                Message = "Failed To Delete Data."
+            };
+        }
     }
 }

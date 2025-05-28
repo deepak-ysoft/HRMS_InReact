@@ -8,6 +8,8 @@ import CustomInput from "../../../components/FormFieldComponent/InputComponent";
 import { useLocation, useNavigate } from "react-router-dom";
 import { LeaveType, LeaveTypeLabels } from "../../../types/Enum/LeaveType";
 import { Button } from "../../../components/ButtonComponent/ButtonComponent";
+import { LeaveApprovel } from "../../../types/Enum/LeaveApprovel";
+import { showToast } from "../../../utils/commonCSS/toast";
 
 const defaultValues: Partial<EmployeeLeave> = {
   leaveId: 0,
@@ -17,7 +19,7 @@ const defaultValues: Partial<EmployeeLeave> = {
   endDate: "", // ISO 8601 date string
   empId: 0,
   isDelete: false,
-  isApprove: false,
+  isApprove: LeaveApprovel.Panding,
 };
 
 export const LeaveForm = () => {
@@ -42,13 +44,14 @@ export const LeaveForm = () => {
 
   const { mutate: SubmitLeave } = useMutation({
     mutationFn: (formData: FormData) => AddEditLeave(formData),
-    onSuccess: () => {
-      alert("Employee saved successfully");
+    onSuccess: (data) => {
+      if (data.isSuccess) showToast.success(data.message);
+      else showToast.warning(data.message);
       reset(defaultValues);
       navigate("/Leaves");
     },
-    onError: () => {
-      alert("Failed to save employee");
+    onError: (err) => {
+      console.log(err);
     },
   });
 

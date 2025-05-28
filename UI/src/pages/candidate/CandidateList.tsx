@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import {
   Column,
   ListTable,
@@ -18,13 +18,14 @@ import { faEye } from "@fortawesome/free-regular-svg-icons"; // Outline eye
 import { FaUserEdit } from "react-icons/fa";
 import { deleteCandidate } from "../../services/Candidate/DeleteCandidate.query";
 import { ConfirmDelete } from "../../components/DeletionConfirm/ConfirmDelete";
+import { showToast } from "../../utils/commonCSS/toast";
 
 const CandidateListPage: React.FC = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [searchValue, setSearchValue] = useState("");
-  
+
   const { data, isPending, refetch } = useQuery({
     queryKey: ["getCandidate", page, pageSize, searchValue],
     queryFn: () =>
@@ -36,8 +37,6 @@ const CandidateListPage: React.FC = () => {
   });
   const [showDelete, setShowDelete] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [toastMsg, setToastMsg] = useState<string | null>(null);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleDeleteClick = (id: string) => {
     setDeleteId(id);
@@ -46,22 +45,15 @@ const CandidateListPage: React.FC = () => {
 
   const handleDeleteConfirm = async () => {
     if (!deleteId) return;
-    try {
-      await deleteCandidate(deleteId);
-      refetch();
-      setToastMsg("Candidate deleted successfully!");
-      setShowDelete(false);
-      setDeleteId(null);
-      // Optionally, you can refetch the candidates after deletion
-      // queryClient.invalidateQueries(["getCandidate"]);
-      if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(() => setToastMsg(null), 2500);
-    } catch {
-      setToastMsg("Error deleting candidate!");
-      setShowDelete(false);
-      setDeleteId(null);
-      if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(() => setToastMsg(null), 2500);
+    const data = await deleteCandidate(deleteId);
+    refetch();
+    setShowDelete(false);
+    setDeleteId(null);
+    // Show custom toast from toast.ts
+    if (data.isSuccess) {
+      showToast.success(data.message);
+    } else {
+      showToast.warning(data.message);
     }
   };
 
@@ -82,35 +74,32 @@ const CandidateListPage: React.FC = () => {
       header: "Action",
       accessor: "Action",
       render: (row) => (
-        console.log("row", row),
-        (
-          <div className="flex gap-3">
-            {/* Empty Eye (Outline View) */}
-            <FontAwesomeIcon
-              icon={faEye}
-              onClick={() =>
-                navigate(`/candidates/candidateDetails`, { state: row })
-              }
-              className="text-[rgb(66,42,213)] text-[15px] hover:text-[rgb(43,36,85)] cursor-pointer transition-all duration-200  hover:scale-110"
-              title="View"
-            />
-            {/* Person Edit (Stacked Icon) */}
-            <FaUserEdit
-              onClick={() =>
-                navigate(`/candidates/add-candidate`, { state: row })
-              }
-              className="text-[rgb(159,145,251)]  text-[18px] hover:text-[rgb(105,90,209)] cursor-pointer transition-all duration-200 hover:scale-110"
-              title="Edit"
-            />
-            {/* Empty Trash */}
-            <FontAwesomeIcon
-              icon={faTrashCan}
-              className="text-[#FF4C4C] hover:text-[#cc0000]  text-[15px] cursor-pointer transition-all duration-200 hover:scale-110"
-              title="Delete"
-              onClick={() => handleDeleteClick(row.id)}
-            />
-          </div>
-        )
+        <div className="flex gap-3">
+          {/* Empty Eye (Outline View) */}
+          <FontAwesomeIcon
+            icon={faEye}
+            onClick={() =>
+              navigate(`/candidates/candidateDetails`, { state: row })
+            }
+            className="text-[rgb(66,42,213)] text-[15px] hover:text-[rgb(43,36,85)] cursor-pointer transition-all duration-200  hover:scale-110"
+            title="View"
+          />
+          {/* Person Edit (Stacked Icon) */}
+          <FaUserEdit
+            onClick={() =>
+              navigate(`/candidates/add-candidate`, { state: row })
+            }
+            className="text-[rgb(159,145,251)]  text-[18px] hover:text-[rgb(105,90,209)] cursor-pointer transition-all duration-200 hover:scale-110"
+            title="Edit"
+          />
+          {/* Empty Trash */}
+          <FontAwesomeIcon
+            icon={faTrashCan}
+            className="text-[#FF4C4C] hover:text-[#cc0000]  text-[15px] cursor-pointer transition-all duration-200 hover:scale-110"
+            title="Delete"
+            onClick={() => handleDeleteClick(row.id)}
+          />
+        </div>
       ),
     },
   ];
@@ -123,8 +112,8 @@ const CandidateListPage: React.FC = () => {
     <>
       <BreadCrumbsComponent />
       <div className="bg-base-100 min-h-[650px] p-3 rounded-lg shadow-md">
-        <div className="mx-5 mt-3 mb-5">
-          <div className="grid grid-cols-9 mb-3 items-center">
+        <div className="mx-5 mt-5 mb-5">
+          <div className="grid grid-cols-9 mb-5 items-center">
             <div className="col-span-2">
               <h1 className="text-2xl font-bold">Candidates</h1>
             </div>
@@ -135,20 +124,12 @@ const CandidateListPage: React.FC = () => {
                 onChange={(e) => setSearchValue(e.target.value)}
               />
             </div>
-            {/* <div className="flex justify-center w-full">
-                 <FilterBar
-                  filters={filterOptions}
-                  selectedFilters={filters}
-                  onFilterChange={setFilters}
-                  className="flex gap-2"
-                /> 
-              </div> */}
             <div className=" w-full">
               <Button
                 type="button"
                 text="Add Candidate"
                 onClick={() => navigate("/candidates/add-candidate")}
-                className="bg-[rgb(66,42,213)] text-white rounded  w-full"
+                className="bg-[rgb(66,42,213)] text-white  w-full "
               />
             </div>
           </div>
@@ -157,17 +138,15 @@ const CandidateListPage: React.FC = () => {
           <div>Loading...</div>
         ) : (
           <>
-            <ListTable<Candidate>
-              columns={columns}
-              data={data?.data || []}
-            />
-            <span className="flex justify-end items-center gap-2 mt-3 mr-8">
+            <ListTable<Candidate> columns={columns} data={data?.data || []} />
+            <span className="flex justify-end items-center gap-2 mt-5 mr-8">
               <Pagination
                 page={page}
                 pageSize={pageSize}
                 totalCount={data?.totalCount || 0}
                 onPageChange={setPage}
                 onPageSizeChange={setPageSize}
+                isShowSize={true}
               />
             </span>
           </>
@@ -180,21 +159,6 @@ const CandidateListPage: React.FC = () => {
             onDelete={handleDeleteConfirm}
             onClose={handleDeleteCancel}
           />
-        </div>
-      )}
-      {toastMsg && (
-        <div
-          className={`fixed top-6 right-6 z-50 px-6 py-3 rounded shadow-lg transition-transform duration-500 ease-in-out
-            ${
-              toastMsg.includes("success") ? "bg-green-600" : "bg-red-600"
-            } text-white
-            animate-slide-in-fade-out`}
-          style={{
-            transform: toastMsg ? "translateY(0)" : "translateY(-40px)",
-            opacity: toastMsg ? 1 : 0,
-          }}
-        >
-          {toastMsg}
         </div>
       )}
     </>

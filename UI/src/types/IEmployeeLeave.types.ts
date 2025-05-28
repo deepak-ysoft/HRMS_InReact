@@ -1,3 +1,4 @@
+import { LeaveApprovel } from "./Enum/LeaveApprovel";
 import { LeaveType } from "./Enum/LeaveType";
 
 export interface EmployeeLeave {
@@ -8,5 +9,5 @@ export interface EmployeeLeave {
   endDate: string; // ISO 8601 date string
   empId: number;
   isDelete: boolean;
-  isApprove?: boolean | null;
+  isApprove?: LeaveApprovel;
 }

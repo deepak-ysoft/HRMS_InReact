@@ -13,7 +13,7 @@ export const Button: React.FC<ButtonProps> = ({
       type={type}
       onClick={onClick}
       disabled={disabled || isSubmitting}
-      className={`py-2 px-4 rounded text-white ${className} ${
+      className={`py-2 px-4 rounded-lg text-white ${className} ${
         disabled || isSubmitting ? "opacity-50" : ""
       }`}
     >

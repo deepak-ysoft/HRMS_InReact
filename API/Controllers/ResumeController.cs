@@ -9,6 +9,7 @@ using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser.Listener;
 using iText.Kernel.Pdf.Canvas.Parser;
 using Microsoft.AspNetCore.Authorization;
+using HRMS.ViewModel.Response;
 
 namespace CandidateDetails_API.Controllers
 {
@@ -26,9 +27,7 @@ namespace CandidateDetails_API.Controllers
         public async Task<ActionResult> UploadResume(IFormFile file)
         {
             if (file == null || file.Length == 0)
-            {
-                return BadRequest("No file uploaded.");
-            }
+                return BadRequest(new ApiResponse<string> { IsSuccess = false, Message = "No file uploaded." });
 
             string extractedText = string.Empty;
 
@@ -52,7 +51,7 @@ namespace CandidateDetails_API.Controllers
             // Parse extracted text
             var parsedData = await ParseResumeAsync(extractedText);
 
-            return Ok(new { success = true, data = parsedData });
+            return Ok(new ApiResponse<dynamic> { IsSuccess = true, Message = "Resume Data Retrieved Successfully.", Data = parsedData });
         }
 
         private async Task<ResumeParsedData> ParseResumeAsync(string text)
@@ -118,9 +117,9 @@ namespace CandidateDetails_API.Controllers
 
             // Extract skills only from the "Skills" section
             //string skillsSection = ExtractSkillsSection(text);
-            List<string> skills = await ExtractSkillsAsync( skillTags,text);
+            List<string> skills = await ExtractSkillsAsync(skillTags, text);
 
-           // List<string> experience = await ExtractExperienceAsync(text);
+            // List<string> experience = await ExtractExperienceAsync(text);
 
             return new ResumeParsedData
             {

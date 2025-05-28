@@ -1,6 +1,7 @@
 ﻿using CandidateDetails_API.IServices;
 using CandidateDetails_API.Model;
 using CandidateDetails_API.ServiceContent;
+using HRMS.ViewModel.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Data;
@@ -41,31 +42,30 @@ namespace CandidateDetails_API.Controllers
             try
             {
                 var result = await _service.Login(model); // Assuming Login is now async
-                if (result.Success)
+                if (result.IsSuccess)
                 {
                     var employeeData = _context.Employees // Include the Role navigation property
                         .FirstOrDefault(x => x.empEmail.ToLower() == model.email.ToLower());
 
                     if (employeeData == null)
-                    {
-                        return NotFound("Employee not found.");
-                    }
+                        return NotFound(new ApiResponse<string>
+                        {
+                            IsSuccess = false,
+                            Message = "Employee not found."
+                        });
 
                     var token = _authService.GenerateJwtToken(employeeData.empId.ToString(), employeeData.Role.ToString()); // GenerateJwtToken returns a token
 
                     return Ok(new
                     {
-                        success = true,
-                        employee = employeeData,
+                        IsSuccess = true,
+                        Data = employeeData,
+                        Message = "Login Succassfully.",
                         token = token
                     }); // Login returns a result with Success property
                 }
                 else
-                {
-                    if (result.Message == "Your account is not active.") // Login returns a result with Message property
-                        return Ok(new { success = false, message = result.Message });
-                    return Ok(new { success = false, message = result.Message });
-                }
+                    return BadRequest(result);
             }
             catch (Exception ex)
             {
@@ -82,12 +82,18 @@ namespace CandidateDetails_API.Controllers
         [HttpPost("ChangePassword")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePassword model)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            try
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
 
-            var result = await _service.ChangePasswordAsync(model); // Assuming ChangePassword is now async
-            return Ok(new { success = result.Success }); // Assuming ChangePassword returns a result with IsSuccess property
-
+                var result = await _service.ChangePasswordAsync(model); // Assuming ChangePassword is now async
+                return Ok(result); // Assuming ChangePassword returns a result with IsSuccess property
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
         /// <summary>
@@ -101,9 +107,7 @@ namespace CandidateDetails_API.Controllers
         {
             var user = await _employeeservice.GetUserByEmailAsync(request.email);
             if (user == null)
-            {
-                return BadRequest("Email not found");
-            }
+                return BadRequest(new ApiResponse<string> { IsSuccess = false, Message = "Email not found" });
 
             // Generate reset token (GUID or JWT)
             var resetToken = Guid.NewGuid().ToString();
@@ -123,7 +127,7 @@ namespace CandidateDetails_API.Controllers
             // Send the reset link via email
             var isSend = await _emailservice.SendEmailAsync(request.email, "Reset your password", $"Click <a href='{resetLink}'>here</a> to reset your password.");
 
-            return Ok(new { success = isSend, message = "Password reset email sent" });
+            return Ok(new ApiResponse<string> { IsSuccess = true, Message = "Password reset email sent" });
         }
 
         /// <summary>
@@ -136,14 +140,12 @@ namespace CandidateDetails_API.Controllers
         public async Task<IActionResult> ResetPassword([FromBody] ResetPassRequest request)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
             // Verify the token and check if it is valid
             var user = await _employeeservice.GetUserByResetTokenAsync(request.Token);
             if (user == null || !user.ResetTokenIsValid)
             {
-                return BadRequest("Invalid or expired token.");
+                return BadRequest(new ApiResponse<string> { IsSuccess = false, Message = "Invalid or expired token." });
             }
 
             // Reset the password (use proper password hashing)
@@ -153,8 +155,7 @@ namespace CandidateDetails_API.Controllers
             // Save the updated user data with the new password
             await _employeeservice.UpdateUserAsync(user);
 
-            return Ok(new { success = true, message = "Password reset successfully." });
+            return Ok(new ApiResponse<string> { IsSuccess = true, Message = "Password reset successfully." });
         }
-
     }
 }

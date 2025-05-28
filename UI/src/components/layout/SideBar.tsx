@@ -58,21 +58,24 @@ const Sidebar = () => {
                       isOpen(item.title) ? "max-h-[500px]" : "max-h-0"
                     }`}
                   >
-                    {item.subItems.map((subItem, subIndex) => (
-                      <li key={subIndex}>
-                        <Link
-                          to={`/${subItem.path}`} // Use Link component instead of <a>
-                          className={`flex items-center gap-2 p-2 rounded-lg text-sm ${
-                            isActive(subItem.path)
-                              ? "bg-primary text-white"
-                              : "hover:bg-base-300"
-                          }`}
-                        >
-                          <span className="w-2 h-2 rounded-full bg-gray-400"></span>
-                          {subItem.title}
-                        </Link>
-                      </li>
-                    ))}
+                    {item.subItems.map((subItem, subIndex) => {
+                      const SubIcon = subItem.icon;
+                      return (
+                        <li key={subIndex}>
+                          <Link
+                            to={`/${subItem.path}`}
+                            className={`flex items-center gap-2 p-2 rounded-lg text-sm ${
+                              isActive(subItem.path)
+                                ? "bg-primary text-white"
+                                : "hover:bg-base-300"
+                            }`}
+                          >
+                            {SubIcon && <SubIcon className="text-lg text-slate-500" />}
+                            {subItem.title}
+                          </Link>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </>
               )}

@@ -37,4 +37,5 @@ export interface CustomInputProps {
   className?: string;
   rows?: number; // Used for textarea
   disabled?: boolean; // <-- add this line
+  lableClass?: string;
 }

@@ -1,5 +1,6 @@
 ﻿using CandidateDetails_API.IServices;
 using CandidateDetails_API.Model;
+using HRMS.ViewModel.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -24,7 +25,7 @@ namespace CandidateDetails_API.Controllers
 
 
         [HttpGet("GetLeads")]
-        public async Task<IActionResult> GetCandidates(int page=1, int pageSize=10, string SearchField = "", string SearchValue = "")
+        public async Task<IActionResult> GetCandidates(int page = 1, int pageSize = 10, string SearchField = "", string SearchValue = "")
         {
             try
             {   // Define the SQL output parameter
@@ -49,12 +50,11 @@ namespace CandidateDetails_API.Controllers
 
                 int totalRecords = (int)totalRecordsParam.Value;
 
-                return Ok(new { data = leads, totalCount = totalRecords });
+                return Ok(new { IsSuccess = true, Data = leads, totalCount = totalRecords });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                // Log the error (Optional)
-                return StatusCode(500, "Internal server error");
+                throw;
             }
         }
 
@@ -64,22 +64,17 @@ namespace CandidateDetails_API.Controllers
             try
             {
                 if (file == null)
-                {
                     return BadRequest("File not found");
-                }
 
                 using var stream = file.OpenReadStream();
-                var success = await _service.AddLeads(stream);
+                var result = await _service.AddLeads(stream);
 
-                if (success)
-                    return Ok(new { success = true });
-                else
-                    return StatusCode(500, "Failed to save leads to the database.");
+                return Ok(result);
             }
             catch (Exception ex)
             {
                 // Return detailed error for debugging (only for development)
-                return StatusCode(500, new { error = ex.Message, stackTrace = ex.StackTrace });
+                throw;
             }
         }
 
@@ -89,16 +84,11 @@ namespace CandidateDetails_API.Controllers
             try
             {   // Validate the model
                 if (!ModelState.IsValid)
-                {
                     return BadRequest(ModelState);
-                }
-                bool res = false;
 
                 // Save leads details
-                res = await _service.AddEditLeads(leads);
-
-                return Ok(new { success = res });
-
+                var res = await _service.AddEditLeads(leads);
+                return Ok(res);
             }
             catch (Exception ex)
             {
@@ -111,14 +101,13 @@ namespace CandidateDetails_API.Controllers
         {
             try
             {
-                bool res = await _service.deleteLeads(id); // Call the service method to delete the lead
-                return Ok(new { success = res }); // Return the result
+                var res = await _service.deleteLeads(id); // Call the service method to delete the lead
+                return Ok(res); // Return the result
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw;
             }
         }
-
     }
 }

@@ -8,6 +8,7 @@ import { Button } from "../../components/ButtonComponent/ButtonComponent";
 import { addEditCandidateApi } from "../../services/Candidate/AddEditCandidate.query";
 import { useMutation } from "@tanstack/react-query";
 import { BreadCrumbsComponent } from "../../components/Breadcrumbs/BreadCrumbsComponents";
+import { showToast } from "../../utils/commonCSS/toast";
 
 const defaultValues: Partial<Candidate> = {
   id: "",
@@ -54,14 +55,13 @@ const CandidateForm = () => {
 
   const { mutate: submitCandidate } = useMutation({
     mutationFn: (formData: FormData) => addEditCandidateApi(formData),
-    onSuccess: () => {
-      alert("Candidate saved successfully");
+    onSuccess: (data) => {
+      if (data.isSuccess) showToast.success(data.message);
+      else showToast.warning(data.message);
       reset(defaultValues);
       navigate("/candidates");
     },
-    onError: () => {
-      alert("Failed to save candidate");
-    },
+    onError: () => {},
   });
 
   const onSubmit = (data: Candidate) => {

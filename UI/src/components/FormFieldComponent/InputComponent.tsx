@@ -20,10 +20,14 @@ const CustomInput: React.FC<CustomInputProps> = ({
   className = "",
   rows = 3,
   disabled = false,
+  lableClass = "",
 }) => {
   return (
     <div>
-      <label htmlFor={name} className="block font-medium mb-1 capitalize">
+      <label
+        htmlFor={name}
+        className={`${lableClass} block font-medium mb-1 capitalize`}
+      >
         {label} {required && <span className="text-red-500">*</span>}
       </label>
 

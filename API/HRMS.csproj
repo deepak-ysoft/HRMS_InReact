@@ -24,6 +24,7 @@
   <ItemGroup>
     <Folder Include="CandidateCV\" />
     <Folder Include="uploads\images\employee\" />
+    <Folder Include="uploads\images\Assets\" />
   </ItemGroup>
 
 </Project>

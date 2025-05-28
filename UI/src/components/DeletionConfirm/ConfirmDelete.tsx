@@ -5,7 +5,6 @@ export const ConfirmDelete: React.FC<ConfirmDeleteProps> = ({
   onClose,
   onDelete,
 }) => {
-  console.log("ConfirmDelete component rendered");
   if (!isOpen) return null;
   return (
     <div className="fixed p-5 inset-0 flex items-start justify-end z-50">

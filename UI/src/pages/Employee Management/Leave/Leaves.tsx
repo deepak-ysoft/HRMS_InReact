@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import { Button } from "../../../components/ButtonComponent/ButtonComponent";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -14,6 +14,7 @@ import { FaUserEdit } from "react-icons/fa";
 import { faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { ConfirmDelete } from "../../../components/DeletionConfirm/ConfirmDelete";
 import { DeleteLeave } from "../../../services/Employee Management/EmployeeLeave/DeleteLeave.query";
+import { showToast } from "../../../utils/commonCSS/toast";
 
 export const LeavePage: React.FC = () => {
   const navigate = useNavigate();
@@ -22,8 +23,6 @@ export const LeavePage: React.FC = () => {
 
   const [showDelete, setShowDelete] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
-  const [toastMsg, setToastMsg] = useState<string | null>(null);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleDeleteClick = (id: number) => {
     setDeleteId(id);
@@ -31,20 +30,14 @@ export const LeavePage: React.FC = () => {
   };
   const handleDeleteConfirm = async () => {
     if (!deleteId) return;
-    try {
-      await DeleteLeave(deleteId);
-      refetch();
-      setToastMsg("Employee deleted successfully!");
-      setShowDelete(false);
-      setDeleteId(null);
-      if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(() => setToastMsg(null), 2500);
-    } catch {
-      setToastMsg("Error deleting employee!");
-      setShowDelete(false);
-      setDeleteId(null);
-      if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(() => setToastMsg(null), 2500);
+    const data = await DeleteLeave(deleteId);
+    refetch();
+    setShowDelete(false);
+    setDeleteId(null);
+    if (data.isSuccess) {
+      showToast.success(data.message);
+    } else {
+      showToast.warning(data.message);
     }
   };
 
@@ -57,7 +50,8 @@ export const LeavePage: React.FC = () => {
     queryKey: ["getLeave", page, userId],
     queryFn: () => GetLeave(Number(userId), page),
   });
-  console.log("Leave", data);
+
+  console.log(data);
 
   const columns: Column<
     Record<string, string | number | File | null | undefined>
@@ -86,12 +80,22 @@ export const LeavePage: React.FC = () => {
       render: (row) => (
         <span
           className={`px-3 py-1 rounded-2xl text-black text-sm ${
-            row.isApprove
+            row.isApprove == "Panding"
+              ? "bg-yellow-50 border border-yellow-300"
+              : row.isApprove == "Approved"
               ? "bg-green-50 border border-green-300"
-              : "bg-red-50 border border-red-300"
+              : row.isApprove == "Rejected"
+              ? "bg-red-50 border border-red-300"
+              : "Rejected"
           }`}
         >
-          {row.isApprove ? "Approved" : "Rejected"}
+          {row.isApprove == "Panding"
+            ? "Panding"
+            : row.isApprove == "Approved"
+            ? "Approved"
+            : row.isApprove == "Rejected"
+            ? "Rejected"
+            : "-"}
         </span>
       ),
     },
@@ -159,21 +163,6 @@ export const LeavePage: React.FC = () => {
             onDelete={handleDeleteConfirm}
             onClose={handleDeleteCancel}
           />
-        </div>
-      )}
-      {toastMsg && (
-        <div
-          className={`fixed top-6 right-6 z-50 px-6 py-3 rounded shadow-lg transition-transform duration-500 ease-in-out
-                  ${
-                    toastMsg.includes("success") ? "bg-green-600" : "bg-red-600"
-                  } text-white
-                  animate-slide-in-fade-out`}
-          style={{
-            transform: toastMsg ? "translateY(0)" : "translateY(-40px)",
-            opacity: toastMsg ? 1 : 0,
-          }}
-        >
-          {toastMsg}
         </div>
       )}
     </>

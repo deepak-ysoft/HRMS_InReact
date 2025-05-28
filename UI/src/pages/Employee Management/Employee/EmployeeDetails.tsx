@@ -6,8 +6,6 @@ export const EmployeeDetails: React.FC = () => {
   const location = useLocation();
   const employee: Employee = location.state as Employee;
   const apiPath = import.meta.env.VITE_API_BASE_URL;
-  console.log("apiPath", apiPath);
-  console.log("data", employee);
 
   return (
     <>

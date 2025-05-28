@@ -1,6 +1,7 @@
 ﻿using CandidateDetails_API.IServices;
 using CandidateDetails_API.Model;
 using ClosedXML.Excel;
+using HRMS.ViewModel.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
@@ -33,9 +34,8 @@ namespace CandidateDetails_API.Controllers
             try
             {
                 if (file == null)
-                {
-                    return BadRequest("File not found");
-                }
+                    return BadRequest(new ApiResponse<string> { IsSuccess = false, Message = "File not found" });
+
                 // read a file which will be upload from a form.
                 var stream = file.OpenReadStream();
                 var Candidates = await _service.AddCandidates(stream);// Call the service method to add candidates
@@ -63,7 +63,7 @@ namespace CandidateDetails_API.Controllers
                     .Where(x => x.schedule_Interview <= DateTime.Now.AddHours(+12) && x.schedule_Interview >= DateTime.Now)
                     .ToListAsync(); // Get the  week data
 
-              
+
                 int todayDataCount = todayData.Count(); // Get the count of the  week data
                 return Ok(new { res = true, todayDataCount = todayDataCount, weekData = weekData, todayData }); // Return the data
             }
@@ -78,7 +78,7 @@ namespace CandidateDetails_API.Controllers
         /// </summary>
         /// <returns>List of candidates and count of candidates</returns>
         [HttpGet("GetCandidates")]
-        public async Task<IActionResult> GetCandidates(int page=1, int pageSize=10, string SearchValue = "")
+        public async Task<IActionResult> GetCandidates(int page = 1, int pageSize = 10, string SearchValue = "")
         {
             try
             {   // Define the SQL output parameter
@@ -125,7 +125,6 @@ namespace CandidateDetails_API.Controllers
                 {
                     return BadRequest(ModelState);
                 }
-                bool res = false;
 
                 // Save the CV file
                 var CandidateCV = Path.Combine(Directory.GetCurrentDirectory(), "CandidateCV");
@@ -178,20 +177,20 @@ namespace CandidateDetails_API.Controllers
                         // Save the file path in the database
                         candidate.cvPath = fileName;
                     }
-                    else if(can.cvPath!=null)
+                    else if (can.cvPath != null)
                     {
                         candidate.cvPath = can.cvPath;
                     }
                 }
                 // Save candidate details
-                res = await _service.AddEditCandidate(candidate);
+                var res = await _service.AddEditCandidate(candidate);
 
                 return Ok(new { success = res });
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return StatusCode(500, new { error = ex.Message });
+                throw;
             }
         }
 
@@ -205,8 +204,8 @@ namespace CandidateDetails_API.Controllers
         {
             try
             {
-                bool res = await _service.deleteCanndidate(id); // Call the service method to delete the candidate
-                return Ok(new { success = res }); // Return the result
+                var res = await _service.deleteCanndidate(id); // Call the service method to delete the candidate
+                return Ok(res); // Return the result
             }
             catch (Exception ex)
             {
@@ -225,9 +224,7 @@ namespace CandidateDetails_API.Controllers
             // Get the candidate details
             var candidate = await _context.candidateDetails.FirstOrDefaultAsync(x => x.id == candidateId);
             if (candidate == null || string.IsNullOrEmpty(candidate.cvPath))
-            {
-                return NotFound("Candidate or CV not found.");
-            }
+                return NotFound(new ApiResponse<string> { IsSuccess = false, Message = "Candidate or CV not found." });
 
             string getFileName = Path.GetFileName(candidate.cvPath); // Extract the file name
             string getEx = Path.GetExtension(getFileName); // Extract the file extension
@@ -235,9 +232,7 @@ namespace CandidateDetails_API.Controllers
 
             // Check if the file exists
             if (!System.IO.File.Exists(filePath))
-            {
-                return NotFound("File not found.");
-            }
+                return NotFound(new ApiResponse<string> { IsSuccess = true, Message = "File not found." });
 
             // Read the file bytes
             var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
@@ -274,13 +269,23 @@ namespace CandidateDetails_API.Controllers
             try
             {
                 var candidate = await _context.candidateDetails.FirstOrDefaultAsync(x => x.id == id); // Get the candidate details
-
+                if (candidate == null)
+                    return NotFound(new ApiResponse<string>
+                    {
+                        IsSuccess = true,
+                        Message = "Candidate not found."
+                    });
                 //var role = await
-                return Ok(new { can = candidate }); // Return the candidate details
+                return Ok(new ApiResponse<Candidate>
+                {
+                    IsSuccess = true,
+                    Message = "Data Retrieved.",
+                    Data = candidate
+                }); // Return the candidate details
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { error = ex.Message });
+                throw;
             }
         }
 
