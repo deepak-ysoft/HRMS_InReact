@@ -1,24 +1,26 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   Column,
   ListTable,
-} from "../../components/ListComponent/ListComponent";
-import { Candidate } from "../../types/ICandidate";
-import { Button } from "../../components/ButtonComponent/ButtonComponent";
-import { useQuery } from "@tanstack/react-query";
-import { getCandidateApi } from "../../services/Candidate/GetCandidate.query";
+} from "../../../components/ListComponent/ListComponent";
+import { Candidate } from "../../../types/ICandidate";
+import { Button } from "../../../components/ButtonComponent/ButtonComponent";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { getCandidateApi } from "../../../services/Candidate/GetCandidate.query";
 import { useNavigate } from "react-router-dom";
-import { BreadCrumbsComponent } from "../../components/Breadcrumbs/BreadCrumbsComponents";
-import SearchBar from "../../components/layout/SearchBar";
+import { BreadCrumbsComponent } from "../../../components/Breadcrumbs/BreadCrumbsComponents";
+import SearchBar from "../../../components/layout/SearchBar";
 // import { FilterBar } from "../../components/ListComponent/FilterBar";
-import Pagination from "../../components/ListComponent/Pagination";
+import Pagination from "../../../components/ListComponent/Pagination";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { faEye } from "@fortawesome/free-regular-svg-icons"; // Outline eye
-import { FaUserEdit } from "react-icons/fa";
-import { deleteCandidate } from "../../services/Candidate/DeleteCandidate.query";
-import { ConfirmDelete } from "../../components/DeletionConfirm/ConfirmDelete";
-import { showToast } from "../../utils/commonCSS/toast";
+import { FaDownload, FaUpload, FaUserEdit } from "react-icons/fa";
+import { deleteCandidate } from "../../../services/Candidate/DeleteCandidate.query";
+import { ConfirmDelete } from "../../../components/DeletionConfirm/ConfirmDelete";
+import { toast } from "react-toastify";
+import { DownloadExcel } from "../../../services/Candidate/DownloadExcel.query";
+import { AddCandidateWithExcel } from "../../../services/Candidate/AddCandidateWithExcel.query";
 
 const CandidateListPage: React.FC = () => {
   const navigate = useNavigate();
@@ -51,15 +53,77 @@ const CandidateListPage: React.FC = () => {
     setDeleteId(null);
     // Show custom toast from toast.ts
     if (data.isSuccess) {
-      showToast.success(data.message);
+      toast.success(data.message);
     } else {
-      showToast.warning(data.message);
+      toast.warning(data.message);
     }
   };
 
   const handleDeleteCancel = () => {
     setShowDelete(false);
     setDeleteId(null);
+  };
+
+  const { isPending: excelIsPending, refetch: excelRefetch } = useQuery({
+    queryKey: ["getCandidateDownload"],
+    queryFn: () => DownloadExcel(),
+  });
+
+  const handleExcelDownload = async () => {
+    const response = await excelRefetch();
+    const data = response?.data?.data; // Corrected path
+
+    if (data?.fileContents) {
+      const byteCharacters = atob(data.fileContents);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], {
+        type:
+          data.contentType ||
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = data.fileDownloadName || "candidates.xlsx";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } else {
+      toast.error("fileContents is undefined");
+    }
+  };
+
+  const { mutate: UploadExcel } = useMutation({
+    mutationFn: (data: FormData) => AddCandidateWithExcel(data),
+    onSuccess: (data) => {
+      if (data.isSuccess) {
+        toast.success(data.message);
+        refetch();
+      } else {
+        toast.warning(data.message);
+      }
+    },
+  });
+
+  const handleFileUpload = (data: File) => {
+    const formData = new FormData();
+    formData.append("file", data);
+    UploadExcel(formData);
+  };
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleFileUpload(file);
+    }
   };
 
   const columns: Column<Candidate>[] = [
@@ -113,7 +177,7 @@ const CandidateListPage: React.FC = () => {
       <BreadCrumbsComponent />
       <div className="bg-base-100 min-h-[650px] p-3 rounded-lg shadow-md">
         <div className="mx-5 mt-5 mb-5">
-          <div className="grid grid-cols-9 mb-5 items-center">
+          <div className="grid grid-cols-10 mb-5 items-center">
             <div className="col-span-2">
               <h1 className="text-2xl font-bold">Candidates</h1>
             </div>
@@ -124,13 +188,45 @@ const CandidateListPage: React.FC = () => {
                 onChange={(e) => setSearchValue(e.target.value)}
               />
             </div>
-            <div className=" w-full">
-              <Button
-                type="button"
-                text="Add Candidate"
-                onClick={() => navigate("/candidates/add-candidate")}
-                className="bg-[rgb(66,42,213)] text-white  w-full "
-              />
+            <div className="col-span-2 grid grid-cols-5 gap-4">
+              <div className="col-span-3 ">
+                <Button
+                  type="button"
+                  text="Add Candidate"
+                  onClick={() => navigate("/candidates/add-candidate")}
+                  className="bg-[rgb(66,42,213)] text-white  w-full "
+                />
+              </div>
+              <div>
+                <Button
+                  type="button"
+                  text={<FaDownload className="my-1" />}
+                  onClick={() => handleExcelDownload()}
+                  disabled={excelIsPending}
+                  title="Download Excel"
+                  className="bg-[rgb(66,42,213)] text-white"
+                />
+              </div>
+              <div>
+                {/* Hidden file input */}
+                <input
+                  type="file"
+                  accept=".xlsx,.xls"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  style={{ display: "none" }}
+                />
+
+                {/* Custom upload button */}
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="bg-[rgb(66,42,213)] text-white p-2 px-4 rounded-lg"
+                  title="Upload Excel"
+                >
+                  <FaUpload className="my-1" />
+                </button>
+              </div>
             </div>
           </div>
         </div>

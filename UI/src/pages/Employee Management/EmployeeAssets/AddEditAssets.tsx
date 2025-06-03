@@ -5,7 +5,7 @@ import { AddEditAssets } from "../../../services/Employee Management/EmployeeAss
 import CustomInput from "../../../components/FormFieldComponent/InputComponent";
 import { Button } from "../../../components/ButtonComponent/ButtonComponent";
 import { EmployeeAsset } from "../../../types/IEmployeeAsset.types";
-import { showToast } from "../../../utils/commonCSS/toast";
+import { toast } from "react-toastify";
 
 const defaultValues: Partial<EmployeeAsset> = {
   assetId: 0,
@@ -72,14 +72,13 @@ export const AssetsForm = ({
   const { mutate: submitAsset } = useMutation({
     mutationFn: (formData: FormData) => AddEditAssets(formData),
     onSuccess: (data) => {
-        if (data.isSuccess) showToast.success(data.message);
-            else showToast.warning(data.message);
+      if (data.isSuccess) toast.success(data.message);
+      else toast.warning(data.message);
       reset(defaultValues);
       if (onSubmitSuccess) onSubmitSuccess();
       if (onClose) onClose();
     },
-    onError: () => {
-    },
+    onError: () => {},
   });
 
   const onSubmit = (data: EmployeeAsset) => {
@@ -110,7 +109,7 @@ export const AssetsForm = ({
       >
         <div className="w-full max-w-2xl pb-5 flex items-center justify-between">
           <h2 className="text-xl font-bold">
-            Asset {editData ? "Edit" : "Add"}
+            {editData ? "Edit" : "Add"} Asset
           </h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-1 gap-x-8">
@@ -145,7 +144,7 @@ export const AssetsForm = ({
             error={errors.assetName?.message?.toString()}
             required
           />
-          
+
           <CustomInput
             label="Description"
             name="description"

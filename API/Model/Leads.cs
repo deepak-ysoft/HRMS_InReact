@@ -1,8 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using HRMS.Model;
+using System.ComponentModel.DataAnnotations;
 
 namespace CandidateDetails_API.Model
 {
-    public class Leads
+    public class Leads : BaseEntity
     {
         [Key]
         public int LeadsId { get; set; }
@@ -21,6 +22,5 @@ namespace CandidateDetails_API.Model
         ErrorMessage = "Only numbers, '+' sign, and one space are allowed.")]
         public string Number { get; set; }
         public string? Remarks { get; set; }
-        public bool? isDelete { get; set; } = false;
     }
 }

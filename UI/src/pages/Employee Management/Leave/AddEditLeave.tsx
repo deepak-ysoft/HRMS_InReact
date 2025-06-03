@@ -9,7 +9,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { LeaveType, LeaveTypeLabels } from "../../../types/Enum/LeaveType";
 import { Button } from "../../../components/ButtonComponent/ButtonComponent";
 import { LeaveApprovel } from "../../../types/Enum/LeaveApprovel";
-import { showToast } from "../../../utils/commonCSS/toast";
+import { toast } from "react-toastify";
 
 const defaultValues: Partial<EmployeeLeave> = {
   leaveId: 0,
@@ -45,8 +45,8 @@ export const LeaveForm = () => {
   const { mutate: SubmitLeave } = useMutation({
     mutationFn: (formData: FormData) => AddEditLeave(formData),
     onSuccess: (data) => {
-      if (data.isSuccess) showToast.success(data.message);
-      else showToast.warning(data.message);
+      if (data.isSuccess) toast.success(data.message);
+      else toast.warning(data.message);
       reset(defaultValues);
       navigate("/Leaves");
     },
@@ -76,7 +76,7 @@ export const LeaveForm = () => {
       <BreadCrumbsComponent />
       <div className="w-full max-w-2xl p-3">
         <h2 className="text-xl font-semibold">
-          Leave {editData ? "Edit" : "Add"}
+          {editData ? "Edit" : "Add"} Leave
         </h2>
       </div>
       <form

@@ -36,9 +36,9 @@ namespace CandidateDetails_API.Controllers
                 int requestedEmpCount = requestedEmployees.Count();
                 return Ok(new { IsSuccess = true, res = employees, requestres = requestedEmployees, reqEmpCount = requestedEmpCount });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -52,23 +52,21 @@ namespace CandidateDetails_API.Controllers
         public async Task<IActionResult> AddEmployee([FromForm] Employee employee)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
             try
             {
                 var emailExists = await _context.Employees.AnyAsync(u => u.empEmail.ToLower() == employee.empEmail.ToLower()); // To check duplicate emails.
                 if (emailExists)
                 {
-                    return BadRequest(new ApiResponse<string> { IsSuccess = true, Message = "Duplicate Email" });
+                    return Ok(new ApiResponse<string> { IsSuccess = false, Message = "Duplicate Email" });
                 }
                 var result = await _service.AddEmployee(employee); // Add or update an employee
 
                 return Ok(result);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -87,18 +85,13 @@ namespace CandidateDetails_API.Controllers
             }
             try
             {
-                var emailExists = await _context.Employees.AnyAsync(u => u.empEmail.ToLower() == employee.empEmail.ToLower() && u.empId != employee.empId); // To check duplicate emails.
-                if (emailExists)
-                {
-                    return Ok(new { success = false, message = "Duplicate Email" });
-                }
                 var result = await _service.UpdateEmployee(employee); // Add or update an employee
-                var employeeData = await _service.GetEmployeeById(employee.empId);
+                //var employeeData = await _service.GetEmployeeById(employee.empId);
                 return Ok(result);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -114,13 +107,11 @@ namespace CandidateDetails_API.Controllers
                 }
                 return Ok(new ApiResponse<Employee> { IsSuccess = true, Message = "Employee not found" });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
         }
-
-
 
         /// <summary>
         ///  Delete an employee
@@ -136,9 +127,9 @@ namespace CandidateDetails_API.Controllers
                 var result = await _service.DeleteEmployee(empId); // Delete an employee
                 return Ok(result);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -151,22 +142,12 @@ namespace CandidateDetails_API.Controllers
         {
             try
             {
-                const int pageSize = 10;
-                var allAssets = await _service.GetEmployeeAssets(empId); // This should return IQueryable or IEnumerable
-
-                var pagedAssets = allAssets
-                    .Skip((page - 1) * pageSize)
-                    .Take(pageSize)
-                    .ToList();
-
-                var totalCount = allAssets.Count();
-
-
-                return Ok(new { IsSuccess = true, Data = pagedAssets, Message = "Employee Details Retrieved.", totalCount = totalCount });
+                var assets = await _service.GetEmployeeAssets( empId,  page); // This should return IQueryable or IEnumerable
+                return Ok(new { IsSuccess = true, Data = assets.pagedAssets, Message = "Employee Details Retrieved.", totalCount = assets.totalCount });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -190,9 +171,9 @@ namespace CandidateDetails_API.Controllers
                 }
                 return Ok(new ApiResponse<string> { IsSuccess = false, Message = "Failed to add asset" });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -213,9 +194,9 @@ namespace CandidateDetails_API.Controllers
                 }
                 return Ok(new ApiResponse<string> { IsSuccess = false, Message = "Failed to delete asset" });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
         }
     }

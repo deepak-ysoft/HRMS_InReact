@@ -1,9 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using HRMS.Model;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CandidateDetails_API.Model
 {
-    public class EmployeeAsset
+    public class EmployeeAsset : BaseEntity
     {
         [Key]
         public int AssetId { get; set; }

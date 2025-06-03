@@ -1,4 +1,5 @@
 ﻿using CandidateDetails_API.Models;
+using HRMS.Model;
 using Microsoft.EntityFrameworkCore;
 
 namespace CandidateDetails_API.Model

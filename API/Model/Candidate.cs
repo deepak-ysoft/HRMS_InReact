@@ -1,9 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using HRMS.Model;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CandidateDetails_API.Model
 {
-    public class Candidate
+    public class Candidate : BaseEntity
     {
         [Key]
         public int id { get; set; }
@@ -46,6 +47,5 @@ namespace CandidateDetails_API.Model
         [NotMapped]
         public IFormFile? cv { get; set; }
         public string? cvPath { get; set; }
-        public bool? isDelete { get; set; }
     }
 }

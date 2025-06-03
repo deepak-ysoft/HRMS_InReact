@@ -1,9 +1,10 @@
-﻿using System.ComponentModel;
+﻿using HRMS.Model;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace CandidateDetails_API.Model
 {
-    public class EmployeeLeave
+    public class EmployeeLeave : BaseEntity
     {
         [Key]
         public int leaveId { get; set; }
@@ -15,7 +16,6 @@ namespace CandidateDetails_API.Model
         [Required]
         public DateTime endDate { get; set; }
         public int empId { get; set; }
-        public bool isDelete { get; set; }
         public ApproveStatus? isApprove { get; set; } = ApproveStatus.Panding;
     }
     public enum LeaveType

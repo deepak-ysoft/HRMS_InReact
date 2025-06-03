@@ -12,10 +12,17 @@ namespace CandidateDetails_API.ServiceContent
     public class LeadsServiceContent : ILeadsService
     {
         private readonly ApplicationDbContext _context; // Database context
-        public LeadsServiceContent(ApplicationDbContext context)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly int _currentUserId; // Current user ID
+        public LeadsServiceContent(ApplicationDbContext context, IHttpContextAccessor httpContextAccessor)
         {
             _context = context; // Initialize the database context
+            _httpContextAccessor = httpContextAccessor;
+
+            var user = _httpContextAccessor.HttpContext?.User;
+            _currentUserId = Convert.ToInt32(user?.FindFirst("empId")?.Value);
         }
+
         public async Task<ApiResponse<string>> AddLeads(Stream fileStream)
         {
             var leads = new List<Leads>();
@@ -66,7 +73,8 @@ namespace CandidateDetails_API.ServiceContent
                     lead.Email = worksheet.Cells[row, 5].Text;
                     lead.Number = worksheet.Cells[row, 6].Text;
                     lead.Remarks = worksheet.Cells[row, 7].Text;
-                    lead.isDelete = false;
+                    lead.CreatedBy = _currentUserId; // Set created by user ID
+                    lead.UpdatedBy = _currentUserId; // Set updated by user ID
 
                     // Clean up number format if needed
                     if (double.TryParse(lead.Number, out double number))
@@ -100,7 +108,8 @@ namespace CandidateDetails_API.ServiceContent
             int res = 0;
             if (lead.LeadsId == 0 || lead.LeadsId == null) // If leads id is 0, then add new leads
             {
-                lead.isDelete = false;
+                lead.CreatedBy = _currentUserId; // Set created by user ID
+                lead.UpdatedBy = _currentUserId;
                 await _context.leads.AddAsync(lead); // Add leads to database
                 res = await _context.SaveChangesAsync();
             }
@@ -113,7 +122,8 @@ namespace CandidateDetails_API.ServiceContent
                     _context.Entry(existingEntity.Entity).State = EntityState.Detached; // Detach the existing leads
                 }
 
-                lead.isDelete = false;
+                lead.UpdatedBy = _currentUserId; // Set updated by user ID
+                lead.UpdatedAt = DateTime.Now; // Set updated at field
                 _context.Entry(lead).State = EntityState.Modified; // Mark the leads as modified
                 res = await _context.SaveChangesAsync();
             }
@@ -136,8 +146,16 @@ namespace CandidateDetails_API.ServiceContent
         public async Task<ApiResponse<string>> deleteLeads(int id)
         {
             var leads = await _context.leads.Where(x => x.LeadsId == id).FirstOrDefaultAsync(); // Get leads by id
+            if (leads == null) // If leads is null
+            {
+                return new ApiResponse<string>
+                {
+                    IsSuccess = false,
+                    Message = "Leads not found."
+                };
+            }
 
-            leads.isDelete = true;
+            leads.IsDeleted = true;
 
             var existingEntity = _context.ChangeTracker.Entries<Leads>().FirstOrDefault(e => e.Entity.LeadsId == leads.LeadsId); // Get existing leads
 
@@ -159,6 +177,31 @@ namespace CandidateDetails_API.ServiceContent
                 IsSuccess = true,
                 Message = "Failed To Delete Data."
             };
+        }
+
+        public async Task<dynamic> GetAllLeads(int page, int pageSize, string SearchValue)
+        {
+            var query = _context.leads.Where(x => !x.IsDeleted).AsQueryable();
+
+            // Apply search filter if SearchValue is provided
+            if (!string.IsNullOrEmpty(SearchValue))
+            {
+                // Use Contains for case-insensitive search across multiple fields
+                query = query.Where(x => x.Post.Contains(SearchValue) ||
+                x.Email.Contains(SearchValue) ||
+                x.Number.Contains(SearchValue));
+            }
+            var result = await query.ToListAsync();
+            // Get total records count
+            int totalRecords = query.Count();
+
+            // Apply pagination
+            var leads = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new { IsSuccess = true, Data = leads, totalCount = totalRecords };
         }
     }
 }

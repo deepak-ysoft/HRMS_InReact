@@ -16,7 +16,7 @@ import { FaUserEdit } from "react-icons/fa";
 import { ConfirmDelete } from "../../../components/DeletionConfirm/ConfirmDelete";
 import { getEmployees } from "../../../services/Employee Management/Employee/GetEmployees.query";
 import { deleteEmployee } from "../../../services/Employee Management/Employee/DeleteEmployee.query";
-import { showToast } from "../../../utils/commonCSS/toast";
+import { toast } from "react-toastify";
 
 const EmployeesPage: React.FC = () => {
   const navigate = useNavigate();
@@ -45,9 +45,9 @@ const EmployeesPage: React.FC = () => {
     setShowDelete(false);
     setDeleteId(null);
     if (data.isSuccess) {
-      showToast.success(data.message);
+      toast.success(data.message);
     } else {
-      showToast.warning(data.message);
+      toast.warning(data.message);
     }
   };
 

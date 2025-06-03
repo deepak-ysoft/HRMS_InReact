@@ -1,5 +1,6 @@
 ﻿using CandidateDetails_API.IServices;
 using CandidateDetails_API.Model;
+using HRMS.ViewModel.Request;
 using HRMS.ViewModel.Response;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -34,31 +35,42 @@ namespace CandidateDetails_API.ServiceContent
         }
 
         // Check user is valid or not
-        public async Task<ApiResponse<string>> Login(Login model)
+        public async Task<ApiResponse<Employee>> Login(Login model)
         {
             var hasher = new PasswordHasher<Employee>();
             var emp = await _context.Employees.FirstOrDefaultAsync(u => u.empEmail == model.email);
-            if (emp != null)
+            if (emp == null)
+                return new ApiResponse<Employee>
+                {
+                    IsSuccess = false,
+                    Message = "Employee not found.",
+                    Data = null
+                };
+            else
             {
                 var passwordVerificationResult = hasher.VerifyHashedPassword(emp, emp.empPassword, model.password); // To verify password
 
                 if (emp.isActive == false && passwordVerificationResult == PasswordVerificationResult.Success)
-                    return new ApiResponse<string>
+                    return new ApiResponse<Employee>
                     {
                         IsSuccess = false,
                         Message = "Your account is not active.",
+                        Data = emp
                     };
+
                 if (passwordVerificationResult == PasswordVerificationResult.Success)
-                    return new ApiResponse<string>
+                    return new ApiResponse<Employee>
                     {
                         IsSuccess = true,
                         Message = "Login successfully.",
+                        Data = emp
                     };
             }
-            return new ApiResponse<string>
+            return new ApiResponse<Employee>
             {
                 IsSuccess = false,
                 Message = "Wrong info.",
+                Data = null
             };
         }
     }

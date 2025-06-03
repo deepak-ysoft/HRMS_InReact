@@ -15,16 +15,24 @@ namespace CandidateDetails_API.ServiceContent
     {
         private readonly IWebHostEnvironment _env;
         private readonly ApplicationDbContext _context; // Create an instance of the database context
-        public EmployeeServiceContent(ApplicationDbContext context, IWebHostEnvironment env)
+
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly int _currentUserId; // Current user ID
+        public EmployeeServiceContent(ApplicationDbContext context, IWebHostEnvironment env, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
             _env = env;
+            _httpContextAccessor = httpContextAccessor;
+
+            var user = _httpContextAccessor.HttpContext?.User;
+            _currentUserId = Convert.ToInt32(user?.FindFirst("empId")?.Value);
+
         }
 
         public async Task<dynamic> GetEmployees(int page, int pageSize, string SearchValue) // Get all employees
         {
             var query = _context.Employees
-            .Where(x => x.isDelete == false)
+            .Where(x => x.IsDeleted == false)
             .AsQueryable();
 
             if (!string.IsNullOrEmpty(SearchValue))
@@ -69,14 +77,14 @@ namespace CandidateDetails_API.ServiceContent
         }
         public async Task<List<Employee>> GetRequestedEmployees() // Get all employees
         {
-            var list = await _context.Employees.Where(x => x.isDelete == false && x.isActive == false).ToListAsync(); // Get all employees from the database
+            var list = await _context.Employees.Where(x => x.IsDeleted == false && x.isActive == false).ToListAsync(); // Get all employees from the database
             return list;
         }
 
 
         public async Task<Employee> GetUserByEmailAsync(string email) // Get user by email
         {
-            var user = await _context.Employees.FirstOrDefaultAsync(x => x.empEmail == email); // Find the user by email
+            var user = await _context.Employees.FirstOrDefaultAsync(x => x.empEmail == email && !x.IsDeleted); // Find the user by email
             return user;
         }
         public async Task<Employee> GetUserByResetTokenAsync(string token)
@@ -97,20 +105,39 @@ namespace CandidateDetails_API.ServiceContent
             var hasher = new PasswordHasher<Employee>();
             employee.ImagePath = fileName;
             if (employee.Role == UserRoles.Admin)
-            {
                 employee.isActive = true;
-            }
             else
-            {
                 employee.isActive = false;
-            }
+
             employee.empPassword = hasher.HashPassword(employee, employee.empPassword);
-            employee.isDelete = false;
+            employee.CreatedBy = _currentUserId;
+            employee.UpdatedBy = _currentUserId;
 
             await _context.Employees.AddAsync(employee);
-            int result = await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
 
-            if (result > 0)
+            string des = $"{employee.empName} birthday";
+            var calendar = new Calendar
+            {
+                Title = CalendarTitle.Birthday,
+                Description = des,
+                Start = employee.empDateOfBirth,
+                End = employee.empDateOfBirth,
+                CreatedBy = _currentUserId, // Set the current user ID as the creator
+                UpdatedBy = _currentUserId, // Set the current user ID as the updater
+            };
+            await _context.calendar.AddAsync(calendar);
+            await _context.SaveChangesAsync();
+
+            var empBirthday = new EmployeeBirthday
+            {
+                calId = calendar.CalId,
+                empId = employee.empId,
+            };
+            await _context.employeeBirthdays.AddAsync(empBirthday);
+            int res = await _context.SaveChangesAsync();
+
+            if (res > 0)
                 return new ApiResponse<Employee>
                 {
                     IsSuccess = true,
@@ -127,8 +154,11 @@ namespace CandidateDetails_API.ServiceContent
 
         public async Task<ApiResponse<Employee>> UpdateEmployee(EmployeeEditRequestVM employee) // Update an employee
         {
-            var previousEmp = await _context.Employees.AsNoTracking().FirstOrDefaultAsync(x => x.empId == employee.empId);
+            var emailExists = await _context.Employees.AnyAsync(u => u.empEmail.ToLower() == employee.empEmail.ToLower() && u.empId != employee.empId); // To check duplicate emails.
+            if (emailExists)
+                return new ApiResponse<Employee> { IsSuccess = false, Message = "Duplicate Email", Data = null };
 
+            var previousEmp = await _context.Employees.AsNoTracking().FirstOrDefaultAsync(x => x.empId == employee.empId);
             if (previousEmp == null)
                 return new ApiResponse<Employee>
                 {
@@ -142,9 +172,8 @@ namespace CandidateDetails_API.ServiceContent
                 : previousEmp.ImagePath;
 
             if (employee.Photo?.FileName != null)
-            {
                 await DeleteUserImageAsync(previousEmp, "images/employee");
-            }
+
             previousEmp.empName = employee.empName;
             previousEmp.empGender = employee.empGender;
             previousEmp.empNumber = employee.empNumber;
@@ -157,61 +186,59 @@ namespace CandidateDetails_API.ServiceContent
 
             previousEmp.ImagePath = fileName;
             previousEmp.isActive = true;
-            previousEmp.isDelete = false;
+            previousEmp.UpdatedBy = _currentUserId;
+            previousEmp.UpdatedAt = DateTime.Now;
 
             _context.Employees.Update(previousEmp);
-            int result = await _context.SaveChangesAsync();
-
-            if (result > 0)
+            await _context.SaveChangesAsync();
+            var empBirth = await _context.employeeBirthdays.FirstOrDefaultAsync(x => x.empId == employee.empId);
+            if (empBirth != null)
             {
-                var empBirth = await _context.employeeBirthdays.FirstOrDefaultAsync(x => x.empId == employee.empId);
-                if (empBirth != null)
+                var cal = await _context.calendar.FirstOrDefaultAsync(x => x.CalId == empBirth.calId);
+                if (cal != null)
                 {
-                    var cal = await _context.calendar.FirstOrDefaultAsync(x => x.CalId == empBirth.calId);
-                    if (cal != null)
+                    cal.Start = employee.empDateOfBirth;
+                    cal.End = employee.empDateOfBirth;
+                    cal.UpdatedBy = _currentUserId;
+                    cal.UpdatedAt = DateTime.Now; // Update the UpdatedAt field
+                    _context.calendar.Update(cal);
+                    return new ApiResponse<Employee>
                     {
-                        cal.StartDate = employee.empDateOfBirth;
-                        cal.EndDate = employee.empDateOfBirth;
+                        IsSuccess = true,
+                        Message = "Employee Updated Succassfully.",
+                        Data = previousEmp
+                    };
+                }
+                else
+                {
+                    string des = $"{employee.empName} birthday";
+                    var calendar = new Calendar
+                    {
+                        Title = CalendarTitle.Birthday,
+                        Description = des,
+                        Start = employee.empDateOfBirth,
+                        End = employee.empDateOfBirth,
+                        CreatedBy = _currentUserId, // Set the current user ID as the creator
+                        UpdatedBy = _currentUserId, // Set the current user ID as the updater
+                    };
+                    await _context.calendar.AddAsync(calendar);
 
-                        _context.calendar.Update(cal);
+                    if (await _context.SaveChangesAsync() > 0)
+                    {
+                        var empBirthday = new EmployeeBirthday
+                        {
+                            calId = calendar.CalId,
+                            empId = employee.empId,
+                        };
+                        await _context.employeeBirthdays.AddAsync(empBirthday);
                         int res = await _context.SaveChangesAsync();
                         if (res > 0)
                             return new ApiResponse<Employee>
                             {
                                 IsSuccess = true,
-                                Message = "Employee Apdated Succassfully.",
+                                Message = "Employee Updated Succassfully.",
                                 Data = previousEmp
                             };
-                    }
-                    else
-                    {
-                        string des = $"{employee.empName} birthday";
-                        var calendar = new Calendar
-                        {
-                            Subject = "Birthday",
-                            Description = des,
-                            StartDate = employee.empDateOfBirth,
-                            EndDate = employee.empDateOfBirth,
-                        };
-                        await _context.calendar.AddAsync(calendar);
-
-                        if (await _context.SaveChangesAsync() > 0)
-                        {
-                            var empBirthday = new EmployeeBirthday
-                            {
-                                calId = calendar.CalId,
-                                empId = employee.empId,
-                            };
-                            await _context.employeeBirthdays.AddAsync(empBirthday);
-                            int res = await _context.SaveChangesAsync();
-                            if (res > 0)
-                                return new ApiResponse<Employee>
-                                {
-                                    IsSuccess = true,
-                                    Message = "Employee Apdated Succassfully.",
-                                    Data = previousEmp
-                                };
-                        }
                     }
                 }
             }
@@ -230,7 +257,7 @@ namespace CandidateDetails_API.ServiceContent
             if (photo == null || photo.Length == 0)
             { return null; }
             string shortGuid = Guid.NewGuid().ToString().Substring(0, 8);
-            string timestamp = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
+            string timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
             string originalName = Path.GetFileNameWithoutExtension(photo.FileName);
 
             // Shorten the original name if it’s longer than 10 characters
@@ -261,7 +288,7 @@ namespace CandidateDetails_API.ServiceContent
 
         public async Task<Employee> GetEmployeeById(int id) // Get an employee by ID
         {
-            var employee = await _context.Employees.FirstOrDefaultAsync(x => x.empId == id); // Find the employee by ID
+            var employee = await _context.Employees.FirstOrDefaultAsync(x => x.empId == id && !x.IsDeleted); // Find the employee by ID
             return employee; // Return the employee
         }
 
@@ -269,12 +296,7 @@ namespace CandidateDetails_API.ServiceContent
         public async Task<ApiResponse<string>> DeleteEmployee(int id) // Delete an employee
         {
             var employee = await _context.Employees.FindAsync(id); // Find the employee by ID
-            var employeeBirthday = await _context.employeeBirthdays.FindAsync(employee.empId); // Find the employee by ID
-            if (employeeBirthday != null)
-            {
-                _context.employeeBirthdays.Remove(employeeBirthday); // First remove foreign key refrence
-                await _context.SaveChangesAsync();
-            }
+            
             if (employee == null)
                 new ApiResponse<string>
                 {
@@ -287,12 +309,12 @@ namespace CandidateDetails_API.ServiceContent
             {
                 _context.Entry(existingEntity.Entity).State = EntityState.Detached; // Detach the existing employee
             }
-            employee.isDelete = true;
-            employee.isActive = true;
+            employee.IsDeleted = true;
+            employee.isActive = false;
             _context.Employees.Update(employee); // Remove the employee
             int result = await _context.SaveChangesAsync();
             if (result > 0)
-              return  new ApiResponse<string>
+                return new ApiResponse<string>
                 {
                     IsSuccess = true,
                     Message = "Employee Deleted Successfully."
@@ -304,10 +326,17 @@ namespace CandidateDetails_API.ServiceContent
             };
         }
 
-        public async Task<List<EmployeeAsset>> GetEmployeeAssets(int empId) // Get all assets of an employee
+        public async Task<dynamic> GetEmployeeAssets(int empId, int page) // Get all assets of an employee
         {
-            var data = await _context.EmployeeAssets.Where(x => x.EmpId == empId).ToListAsync(); // Get all assets of an employee
-            return data;
+            var data = await _context.EmployeeAssets.Where(x => x.EmpId == empId && !x.IsDeleted).ToListAsync(); // Get all assets of an employee
+            var totalCount = data.Count();
+            const int pageSize = 10;
+            var pagedAssets = data
+                 .Skip((page - 1) * pageSize)
+                 .Take(pageSize)
+                 .ToList();
+
+            return new { pagedAssets, totalCount };
         }
 
         public async Task<bool> AddUpdateEmployeeAssets(EmployeeAssetsResponseVM employeeAsset)
@@ -323,6 +352,8 @@ namespace CandidateDetails_API.ServiceContent
                     Description = employeeAsset.Description,
                     ImagePath = img,
                     EmpId = employeeAsset.EmpId,
+                    CreatedBy = _currentUserId,
+                    UpdatedBy = _currentUserId,
                 };
                 _context.EmployeeAssets.Add(assets);
                 return await _context.SaveChangesAsync() > 0;
@@ -332,6 +363,8 @@ namespace CandidateDetails_API.ServiceContent
                 var assets = await _context.EmployeeAssets.FindAsync(employeeAsset.AssetId);
                 assets.AssetName = employeeAsset.AssetName;
                 assets.Description = employeeAsset.Description;
+                assets.UpdatedBy = _currentUserId;
+                assets.UpdatedAt = DateTime.Now; // Update the UpdatedAt field
                 if (img != "")
                     assets.ImagePath = img;
                 assets.ImagePath = assets.ImagePath;
@@ -346,7 +379,8 @@ namespace CandidateDetails_API.ServiceContent
             var employeeAsset = await _context.EmployeeAssets.FirstOrDefaultAsync(x => x.AssetId == assetId);
             if (employeeAsset != null)
             {
-                _context.EmployeeAssets.Remove(employeeAsset);
+                employeeAsset.IsDeleted = true; // Mark the asset as deleted
+                _context.EmployeeAssets.Update(employeeAsset);
                 return await _context.SaveChangesAsync() > 0;
             }
             return false;

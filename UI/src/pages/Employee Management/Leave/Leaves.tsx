@@ -14,7 +14,9 @@ import { FaUserEdit } from "react-icons/fa";
 import { faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { ConfirmDelete } from "../../../components/DeletionConfirm/ConfirmDelete";
 import { DeleteLeave } from "../../../services/Employee Management/EmployeeLeave/DeleteLeave.query";
-import { showToast } from "../../../utils/commonCSS/toast";
+import { toast } from "react-toastify";
+import dayjs from "dayjs";
+import { EmployeeLeave } from "../../../types/IEmployeeLeave.types";
 
 export const LeavePage: React.FC = () => {
   const navigate = useNavigate();
@@ -35,9 +37,9 @@ export const LeavePage: React.FC = () => {
     setShowDelete(false);
     setDeleteId(null);
     if (data.isSuccess) {
-      showToast.success(data.message);
+      toast.success(data.message);
     } else {
-      showToast.warning(data.message);
+      toast.warning(data.message);
     }
   };
 
@@ -72,8 +74,16 @@ export const LeavePage: React.FC = () => {
         </>
       ),
     },
-    { header: "Start Date", accessor: "startDate" },
-    { header: "End Date", accessor: "endDate" },
+    {
+      header: "Start Date",
+      accessor: "startDate",
+      render: (row) => dayjs(row.startDate).format("DD-MM-YYYY hh:mm A"),
+    },
+    {
+      header: "End Date",
+      accessor: "endDate",
+      render: (row) => dayjs(row.endDate).format("DD-MM-YYYY hh:mm A"),
+    },
     {
       header: "Status",
       accessor: "isApprove",

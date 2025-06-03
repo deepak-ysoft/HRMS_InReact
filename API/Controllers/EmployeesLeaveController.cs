@@ -31,54 +31,12 @@ namespace CandidateDetails_API.Controllers
         {
             try
             {
-                // Define the SQL output parameter
-                var totalRecordsParam = new SqlParameter("@TotalRecords", SqlDbType.Int)
-                {
-                    Direction = ParameterDirection.Output
-                };
-                // Define SQL parameters for the stored procedure
-                var parameters = new[]
-                {
-                    new SqlParameter("@empId", SqlDbType.Int) { Value = empId },
-                    new SqlParameter("@PageNumber", SqlDbType.Int) { Value = page },
-                    totalRecordsParam
-                };
-
-                // Call the stored procedure using FromSqlRaw
-                var leaves = await _context.employeesleave
-                    .FromSqlRaw("EXEC usp_GetAllEmployeeLeave @empId, @PageNumber, @TotalRecords OUT", parameters)
-                    .ToListAsync();
-
-                var list = leaves.Select(x => new LeaveResponseVM
-                {
-                    leaveId = x.leaveId,
-                    LeaveFor = x.LeaveFor,
-                    LeaveType = x.LeaveType.ToString(),
-                    startDate = x.startDate,
-                    endDate = x.endDate,
-                    isApprove = x.isApprove.ToString()
-                }).ToList();
-
-                var leaveRequests = await _context.employeesleave
-                    .FromSqlRaw("EXEC usp_GetAllEmployeeLeaveRequests")
-                    .ToListAsync();
-
-                var requestList = leaveRequests.Select(x => new LeaveResponseVM
-                {
-                    leaveId = x.leaveId,
-                    LeaveFor = x.LeaveFor,
-                    LeaveType = x.LeaveType.ToString(),
-                    startDate = x.startDate,
-                    endDate = x.endDate,
-                    isApprove = x.isApprove.ToString()
-                }).ToList();
-
-                int totalRecords = (int)totalRecordsParam.Value;
-                return Ok(new { IsSuccess = true, Data = list, reqLeave = requestList, totalCount = totalRecords });
+                var result = await _employeeLeave.GetEmployeesLeave(empId, page); // Get all employees leave
+                return Ok(result);          
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -96,22 +54,11 @@ namespace CandidateDetails_API.Controllers
             try
             {
                 var result = await _employeeLeave.AddUpdateEmployeeLeave(employeeLeave); // Add or update an employee leave
-                if (!result)
-                    return Ok(new ApiResponse<string>
-                    {
-                        IsSuccess = false,
-                        Message = "Failed to save data."
-                    });
-
-                return Ok(new ApiResponse<string>
-                {
-                    IsSuccess = true,
-                    Message = "Data Saved Successfully."
-                });
+                return Ok(result);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -129,9 +76,9 @@ namespace CandidateDetails_API.Controllers
                 var result = await _employeeLeave.DeleteEmployeeLeave(leaveId); // Delete an employee leave
                 return Ok(result);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
         }
     }

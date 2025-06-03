@@ -14,7 +14,7 @@ import { ConfirmDelete } from "../../../components/DeletionConfirm/ConfirmDelete
 import { DeleteAssets } from "../../../services/Employee Management/EmployeeAssets/DeleteAssets.query";
 import { EmployeeAsset } from "../../../types/IEmployeeAsset.types";
 import Pagination from "../../../components/ListComponent/Pagination";
-import { showToast } from "../../../utils/commonCSS/toast";
+import { toast } from "react-toastify";
 
 export const AssetsPage: React.FC<{
   onEdit?: (asset: Partial<EmployeeAsset>) => void;
@@ -39,9 +39,9 @@ export const AssetsPage: React.FC<{
     setShowDelete(false);
     setDeleteId(null);
     if (data.isSuccess) {
-      showToast.success(data.message);
+      toast.success(data.message);
     } else {
-      showToast.warning(data.message);
+      toast.warning(data.message);
     }
   };
 

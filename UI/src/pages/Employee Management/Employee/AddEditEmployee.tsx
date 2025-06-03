@@ -10,7 +10,7 @@ import { BreadCrumbsComponent } from "../../../components/Breadcrumbs/BreadCrumb
 import { UserRoles } from "../../../types/Enum/UserRoles";
 import { EditEmployeeasync } from "../../../services/Employee Management/Employee/EditEmployee.query";
 import { Gender } from "../../../types/Enum/Gender";
-import { showToast } from "../../../utils/commonCSS/toast";
+import { toast } from "react-toastify";
 
 const defaultValues: Partial<Employee> = {
   empId: 0,
@@ -58,8 +58,8 @@ export const EmployeeForm = () => {
   const { mutate: submitEmployee } = useMutation({
     mutationFn: (formData: FormData) => AddEmployeeasync(formData),
     onSuccess: (data) => {
-      if (data.isSuccess) showToast.success(data.message);
-      else showToast.warning(data.message);
+      if (data.isSuccess) toast.success(data.message);
+      else toast.warning(data.message);
       reset(defaultValues);
       navigate("/employees");
     },
@@ -68,8 +68,8 @@ export const EmployeeForm = () => {
   const { mutate: submitEmployeeEdit } = useMutation({
     mutationFn: (formData: FormData) => EditEmployeeasync(formData),
     onSuccess: (data) => {
-      if (data.isSuccess) showToast.success(data.message);
-      else showToast.warning(data.message);
+      if (data.isSuccess) toast.success(data.message);
+      else toast.warning(data.message);
       reset(defaultValues);
       navigate("/employees");
     },
@@ -99,7 +99,7 @@ export const EmployeeForm = () => {
       <BreadCrumbsComponent />
       <div className="w-full max-w-2xl p-3">
         <h2 className="text-xl font-semibold">
-          Employee {editData ? "Edit" : "Add"}
+          {editData ? "Edit" : "Add"} Employee
         </h2>
       </div>
       <form

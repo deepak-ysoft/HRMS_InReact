@@ -1,4 +1,4 @@
-﻿namespace CandidateDetails_API.Model
+﻿namespace HRMS.ViewModel.Request
 {
     public class Login
     {

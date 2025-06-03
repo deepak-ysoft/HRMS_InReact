@@ -52,7 +52,7 @@ export function ListTable<
             {data.map((row, idx) => (
               <tr
                 key={idx}
-                className="h-11 hover:bg-[rgb(243,241,253)] transition-all duration-300 text-[15px]"
+                className="h-11 hover:bg-base-300 transition-all duration-300 text-[15px]"
               >
                 {columns.map((col, index) => (
                   <td

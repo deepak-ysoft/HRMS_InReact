@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace CandidateDetails_API.Model
+namespace HRMS.Model
 {
     public class EmployeeLeaveVM
     {

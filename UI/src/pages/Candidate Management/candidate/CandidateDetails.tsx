@@ -1,9 +1,10 @@
 import React from "react";
 import { useLocation } from "react-router-dom";
-import { Candidate } from "../../types/ICandidate";
-import { BreadCrumbsComponent } from "../../components/Breadcrumbs/BreadCrumbsComponents";
-import CustomInput from "../../components/FormFieldComponent/InputComponent";
-
+import { Candidate } from "../../../types/ICandidate";
+import { BreadCrumbsComponent } from "../../../components/Breadcrumbs/BreadCrumbsComponents";
+import CustomInput from "../../../components/FormFieldComponent/InputComponent";
+import { Button } from "../../../components/ButtonComponent/ButtonComponent";
+import { FaDownload } from "react-icons/fa";
 const CandidateDetails: React.FC = () => {
   const location = useLocation();
   const candidate: Candidate = location.state as Candidate;
@@ -13,12 +14,12 @@ const CandidateDetails: React.FC = () => {
       <BreadCrumbsComponent />
 
       <div className="mb-4 w-full pl-5">
-        <h1 className="text-3xl font-bold mb-6 text-gray-800">
+        <h1 className="text-3xl font-bold mb-6 text-base-800">
           Candidate Details
         </h1>
         <div className="grid grid-cols-6 gap-8">
           {/* Profile Details Box */}
-          <div className="col-span-2 border border-gray-300 rounded-lg p-6 bg-white shadow-md mb-4">
+          <div className="col-span-2  rounded-lg p-6 bg-base-100 shadow-md mb-4">
             <h2 className="text-xl font-semibold mb-4">Profile Details</h2>
             <CustomInput
               label="Name"
@@ -58,8 +59,55 @@ const CandidateDetails: React.FC = () => {
             />
           </div>
           {/* Other Details Box */}
-          <div className="col-span-4 grid grid-cols-2 gap-4 border border-gray-300 rounded-lg p-6 bg-white shadow-md mb-4">
-            <h2 className="text-xl font-semibold mb-4">Other Details</h2><div></div>
+          <div className="col-span-4 grid grid-cols-2 gap-4 rounded-lg p-6 bg-base-100 shadow-md mb-4">
+            <h2 className="text-xl font-semibold mb-4">Other Details</h2>
+            <div className="mb-2 flex items-center justify-end ">
+              {candidate.cvPath ? (
+                <a href={candidate.cvPath} download>
+                  <Button
+                    type="button"
+                    text={
+                      <>
+                        Download CV
+                        <FaDownload className="inline-block ml-2" />
+                      </>
+                    }
+                    className="bg-[rgb(66,42,213)]"
+                  />
+                </a>
+              ) : candidate.cv &&
+                typeof candidate.cv === "object" &&
+                "name" in candidate.cv &&
+                "size" in candidate.cv ? (
+                <a
+                  href={URL.createObjectURL(candidate.cv as Blob)}
+                  download={candidate.cv.name}
+                >
+                  <Button
+                    type="button"
+                    text={
+                      <>
+                        Download CV
+                        <FaDownload className="inline-block ml-2" />
+                      </>
+                    }
+                    className="bg-[rgb(66,42,213)] "
+                  />
+                </a>
+              ) : (
+                <Button
+                  type="button"
+                  text={
+                    <>
+                      Download CV
+                      <FaDownload className="inline-block ml-2" />
+                    </>
+                  }
+                  className="bg-[rgb(66,42,213)] cursor-not-allowed opacity-60"
+                  disabled
+                />
+              )}
+            </div>
             <CustomInput
               label="Preferred Location"
               name="prefer_Location"
@@ -126,31 +174,6 @@ const CandidateDetails: React.FC = () => {
               value={candidate.date || "-"}
               onChange={() => {}}
             />
-            <div className="mb-2">
-              <strong>CV:</strong>{" "}
-              {candidate.cvPath ? (
-                <a
-                  href={candidate.cvPath}
-                  download
-                  className="text-blue-600 underline hover:text-blue-800"
-                >
-                  Download CV
-                </a>
-              ) : candidate.cv &&
-                typeof candidate.cv === "object" &&
-                "name" in candidate.cv &&
-                "size" in candidate.cv ? (
-                <a
-                  href={URL.createObjectURL(candidate.cv as Blob)}
-                  download={candidate.cv.name}
-                  className="text-blue-600 underline hover:text-blue-800"
-                >
-                  Download CV
-                </a>
-              ) : (
-                "-"
-              )}
-            </div>
           </div>
         </div>
       </div>

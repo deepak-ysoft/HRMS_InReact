@@ -1,5 +1,6 @@
 ﻿using CandidateDetails_API.IServices;
 using CandidateDetails_API.Model;
+using HRMS.ViewModel.Request;
 using HRMS.ViewModel.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -25,32 +26,12 @@ namespace CandidateDetails_API.Controllers
 
 
         [HttpGet("GetLeads")]
-        public async Task<IActionResult> GetCandidates(int page = 1, int pageSize = 10, string SearchField = "", string SearchValue = "")
+        public async Task<IActionResult> GetCandidates(int page = 1, int pageSize = 10, string SearchValue = "")
         {
             try
-            {   // Define the SQL output parameter
-                var totalRecordsParam = new SqlParameter("@TotalRecords", SqlDbType.Int)
-                {
-                    Direction = ParameterDirection.Output
-                };
-                // Define SQL parameters for the stored procedure
-                var parameters = new[]
-                {
-                    new SqlParameter("@PageNumber", SqlDbType.Int) { Value = page },
-                    new SqlParameter("@PageSize", SqlDbType.Int) { Value = pageSize },
-                    new SqlParameter("@SearchField", SqlDbType.NVarChar, 255) { Value = (object)SearchField ?? DBNull.Value },
-                    new SqlParameter("@SearchValue", SqlDbType.NVarChar, 255) { Value = (object)SearchValue ?? DBNull.Value },
-                    totalRecordsParam
-                };
-
-                // Call the stored procedure using FromSqlRaw
-                var leads = await _context.leads
-                    .FromSqlRaw("EXEC usp_GetAllLeads @PageNumber, @PageSize,@SearchField,@SearchValue,@TotalRecords OUT", parameters)
-                    .ToListAsync();
-
-                int totalRecords = (int)totalRecordsParam.Value;
-
-                return Ok(new { IsSuccess = true, Data = leads, totalCount = totalRecords });
+            {
+                var response = await _service.GetAllLeads(page, pageSize, SearchValue); // Call the service method to get leads
+                return Ok(response);
             }
             catch (Exception)
             {
@@ -59,21 +40,20 @@ namespace CandidateDetails_API.Controllers
         }
 
         [HttpPost("AddLeadsFromExcel")]
-        public async Task<IActionResult> AddLeadsFromExcel(IFormFile file)
+        public async Task<IActionResult> AddLeadsFromExcel(AddDataFromExcelRequestVM model)
         {
             try
             {
-                if (file == null)
+                if (model.file == null)
                     return BadRequest("File not found");
 
-                using var stream = file.OpenReadStream();
+                using var stream = model.file.OpenReadStream();
                 var result = await _service.AddLeads(stream);
 
                 return Ok(result);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                // Return detailed error for debugging (only for development)
                 throw;
             }
         }
@@ -90,9 +70,9 @@ namespace CandidateDetails_API.Controllers
                 var res = await _service.AddEditLeads(leads);
                 return Ok(res);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return StatusCode(500, new { error = ex.Message });
+                throw;
             }
         }
 
@@ -104,7 +84,7 @@ namespace CandidateDetails_API.Controllers
                 var res = await _service.deleteLeads(id); // Call the service method to delete the lead
                 return Ok(res); // Return the result
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw;
             }

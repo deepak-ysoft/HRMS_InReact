@@ -7,6 +7,7 @@ export const Button: React.FC<ButtonProps> = ({
   disabled = false,
   isSubmitting = false,
   className = "",
+  title = "",
 }) => {
   return (
     <button
@@ -16,6 +17,7 @@ export const Button: React.FC<ButtonProps> = ({
       className={`py-2 px-4 rounded-lg text-white ${className} ${
         disabled || isSubmitting ? "opacity-50" : ""
       }`}
+      title={title}
     >
       {isSubmitting ? "Submitting..." : text}
     </button>

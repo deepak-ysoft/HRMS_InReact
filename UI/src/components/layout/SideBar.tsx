@@ -70,7 +70,9 @@ const Sidebar = () => {
                                 : "hover:bg-base-300"
                             }`}
                           >
-                            {SubIcon && <SubIcon className="text-lg text-slate-500" />}
+                            {SubIcon && (
+                              <SubIcon className="text-md " />
+                            )}
                             {subItem.title}
                           </Link>
                         </li>

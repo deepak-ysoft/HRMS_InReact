@@ -1,14 +1,14 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Candidate } from "../../types/ICandidate";
-import CustomInput from "../../components/FormFieldComponent/InputComponent";
-import { validateForm } from "./ValidateFrom";
-import { Button } from "../../components/ButtonComponent/ButtonComponent";
-import { addEditCandidateApi } from "../../services/Candidate/AddEditCandidate.query";
+import { Candidate } from "../../../types/ICandidate";
+import CustomInput from "../../../components/FormFieldComponent/InputComponent";
+import { validateCandidateForm } from "./ValidateFrom";
+import { Button } from "../../../components/ButtonComponent/ButtonComponent";
+import { addEditCandidateApi } from "../../../services/Candidate/AddEditCandidate.query";
 import { useMutation } from "@tanstack/react-query";
-import { BreadCrumbsComponent } from "../../components/Breadcrumbs/BreadCrumbsComponents";
-import { showToast } from "../../utils/commonCSS/toast";
+import { BreadCrumbsComponent } from "../../../components/Breadcrumbs/BreadCrumbsComponents";
+import { toast } from "react-toastify";
 
 const defaultValues: Partial<Candidate> = {
   id: "",
@@ -56,8 +56,8 @@ const CandidateForm = () => {
   const { mutate: submitCandidate } = useMutation({
     mutationFn: (formData: FormData) => addEditCandidateApi(formData),
     onSuccess: (data) => {
-      if (data.isSuccess) showToast.success(data.message);
-      else showToast.warning(data.message);
+      if (data.isSuccess) toast.success(data.message);
+      else toast.warning(data.message);
       reset(defaultValues);
       navigate("/candidates");
     },
@@ -65,7 +65,7 @@ const CandidateForm = () => {
   });
 
   const onSubmit = (data: Candidate) => {
-    const validationErrors = validateForm(data);
+    const validationErrors = validateCandidateForm(data);
     if (Object.keys(validationErrors).length > 0) {
       Object.entries(validationErrors).forEach(([key, message]) => {
         setError(key as string, { type: "manual", message: message as string });
@@ -287,7 +287,7 @@ const CandidateForm = () => {
         <Button
           type="submit"
           text={isSubmitting ? "Submitting..." : "Submit"}
-          className="bg-blue-500 text-white mt-10 py-2 px-4 rounded disabled:opacity-50"
+          className="bg-[rgb(66,42,213)] text-white mt-10 py-2 px-4 rounded disabled:opacity-50"
           disabled={isSubmitting}
         />
         <Button

@@ -1,4 +1,5 @@
 ﻿using CandidateDetails_API.IServices;
+using CandidateDetails_API.Model;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -18,19 +19,22 @@ namespace CandidateDetails_API.ServiceContent
         }
 
         // Generate Jwt Token by emp id
-        public async Task<string> GenerateJwtToken(string empId, string role)
+        public async Task<string> GenerateJwtToken(Employee emp, string role)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_jwtKey);
+            var claims = new[]
+                {
+                    new Claim("empId", emp.empId.ToString()),
+                    new Claim("empName", emp.empName),
+                    new Claim(ClaimTypes.Email, emp.empEmail),
+                    new Claim(ClaimTypes.Role, emp.Role.ToString())
+                };
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Subject = new ClaimsIdentity(new[]
-                {
-            new Claim(ClaimTypes.Name, empId),
-            new Claim(ClaimTypes.Role, role) // Add role claim
-        }),
-                Expires = DateTime.UtcNow.AddHours(10),
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.Now.AddHours(10),
                 Issuer = _jwtIssuer,
                 Audience = _jwtIssuer,
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)

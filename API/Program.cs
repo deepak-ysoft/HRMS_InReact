@@ -1,6 +1,7 @@
 using CandidateDetails_API.IServices;
 using CandidateDetails_API.Model;
 using CandidateDetails_API.ServiceContent;
+using HRMS.ViewModel.Request;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;

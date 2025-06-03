@@ -1,9 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using HRMS.Model;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CandidateDetails_API.Model
 {
-    public class Employee
+    public class Employee : BaseEntity
     {
         [Key]
         public int empId { get; set; }
@@ -39,7 +40,6 @@ namespace CandidateDetails_API.Model
         public string? ImagePath { get; set; }
         [NotMapped]
         public IFormFile? Photo { get; set; }
-        public bool? isDelete { get; set; }
         public UserRoles Role { get; set; }
         public bool? isActive { get; set; }
 

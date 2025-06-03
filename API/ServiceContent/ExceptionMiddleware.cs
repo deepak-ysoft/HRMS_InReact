@@ -57,7 +57,7 @@ public class ExceptionMiddleware
             //        ResponseContent = ex.InnerException.Message,
             //        ExceptionMessage = ex.Message,
             //        StackTrace = ex.StackTrace,
-            //        CreatedAt = DateTime.UtcNow,
+            //        CreatedAt = DateTime.Now,
             //        CreatedBy = userId
             //    };
 

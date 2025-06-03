@@ -1,6 +1,7 @@
 ﻿using CandidateDetails_API.IServices;
 using CandidateDetails_API.Model;
 using CandidateDetails_API.ServiceContent;
+using HRMS.ViewModel.Request;
 using HRMS.ViewModel.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -44,22 +45,12 @@ namespace CandidateDetails_API.Controllers
                 var result = await _service.Login(model); // Assuming Login is now async
                 if (result.IsSuccess)
                 {
-                    var employeeData = _context.Employees // Include the Role navigation property
-                        .FirstOrDefault(x => x.empEmail.ToLower() == model.email.ToLower());
-
-                    if (employeeData == null)
-                        return NotFound(new ApiResponse<string>
-                        {
-                            IsSuccess = false,
-                            Message = "Employee not found."
-                        });
-
-                    var token = _authService.GenerateJwtToken(employeeData.empId.ToString(), employeeData.Role.ToString()); // GenerateJwtToken returns a token
-
+                   
+                    var token = _authService.GenerateJwtToken(result.Data, result.Data.Role.ToString()); // GenerateJwtToken returns a token
                     return Ok(new
                     {
                         IsSuccess = true,
-                        Data = employeeData,
+                        Data = result.Data,
                         Message = "Login Succassfully.",
                         token = token
                     }); // Login returns a result with Success property
@@ -67,9 +58,9 @@ namespace CandidateDetails_API.Controllers
                 else
                     return BadRequest(result);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while processing your request.");
+                throw;
             }
         }
 
@@ -118,7 +109,7 @@ namespace CandidateDetails_API.Controllers
 
             // Save the reset token and expiration time in the database
             await _employeeservice.UpdateUserAsync(user);
-
+            
             // Create the reset link with the token
             //var resetLink = $"http://localhost:4200/reset-password?token={resetToken}";
             var resetLink = $"{request.frontendUrl}/reset-password?token={resetToken}";

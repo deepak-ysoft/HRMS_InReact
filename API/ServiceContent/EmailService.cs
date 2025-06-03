@@ -1,5 +1,5 @@
 ﻿using CandidateDetails_API.IServices;
-using CandidateDetails_API.Model;
+using HRMS.ViewModel.Request;
 using Microsoft.Extensions.Options;
 using System.Net;
 using System.Net.Mail;
@@ -37,11 +37,9 @@ namespace CandidateDetails_API.ServiceContent
                     return true; // Email sent successfully
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                // Log the exception (if logging is set up)
-                Console.WriteLine($"Error sending email: {ex.Message}");
-                return false; // Return false if email sending fails
+                throw;
             }
         }
 

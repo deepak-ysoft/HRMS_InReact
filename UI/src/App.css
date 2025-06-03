@@ -1,0 +1,28 @@
+.fc .fc-button {
+  background-color: rgb(159, 145, 251) !important;
+  border-color: rgb(213, 208, 246) !important;
+  color: black !important;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: 0.3s ease;
+}
+
+.fc .fc-button:hover {
+  background-color: rgb(109, 90, 232) !important;
+  border-color: rgb(136, 118, 249) !important;
+  color: white !important;
+}
+
+.fc .fc-button:disabled {
+  background-color: #ccc !important;
+  border-color: #ccc !important;
+  color: #666 !important;
+  cursor: not-allowed;
+}
+
+.fc .fc-button.fc-button-active {
+  background-color: rgb(109, 90, 232) !important;
+  border-color: rgb(136, 118, 249) !important;
+  color: white !important;
+}

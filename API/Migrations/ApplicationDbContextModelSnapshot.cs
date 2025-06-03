@@ -30,6 +30,21 @@ namespace HRMS.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id"));
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int");
+
                     b.Property<string>("comments")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -62,9 +77,6 @@ namespace HRMS.Migrations
                     b.Property<string>("experience")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool?>("isDelete")
-                        .HasColumnType("bit");
 
                     b.Property<string>("linkedin_Profile")
                         .HasColumnType("nvarchar(max)");
@@ -112,8 +124,17 @@ namespace HRMS.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("empId"));
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int");
+
                     b.Property<string>("ImagePath")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<string>("ResetToken")
                         .HasColumnType("nvarchar(max)");
@@ -122,6 +143,12 @@ namespace HRMS.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<int>("Role")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedBy")
                         .HasColumnType("int");
 
                     b.Property<string>("empAddress")
@@ -164,9 +191,6 @@ namespace HRMS.Migrations
                     b.Property<bool?>("isActive")
                         .HasColumnType("bit");
 
-                    b.Property<bool?>("isDelete")
-                        .HasColumnType("bit");
-
                     b.HasKey("empId");
 
                     b.ToTable("Employees");
@@ -184,6 +208,12 @@ namespace HRMS.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -193,6 +223,15 @@ namespace HRMS.Migrations
 
                     b.Property<string>("ImagePath")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int");
 
                     b.HasKey("AssetId");
 
@@ -226,11 +265,26 @@ namespace HRMS.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("leaveId"));
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
                     b.Property<string>("LeaveFor")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("LeaveType")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedBy")
                         .HasColumnType("int");
 
                     b.Property<int>("empId")
@@ -242,34 +296,12 @@ namespace HRMS.Migrations
                     b.Property<int?>("isApprove")
                         .HasColumnType("int");
 
-                    b.Property<bool>("isDelete")
-                        .HasColumnType("bit");
-
                     b.Property<DateTime>("startDate")
                         .HasColumnType("datetime2");
 
                     b.HasKey("leaveId");
 
                     b.ToTable("employeesleave");
-                });
-
-            modelBuilder.Entity("CandidateDetails_API.Model.EmployeeLeaveVM", b =>
-                {
-                    b.Property<int>("leaveVmId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("leaveVmId"));
-
-                    b.Property<int?>("calId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("leaveId")
-                        .HasColumnType("int");
-
-                    b.HasKey("leaveVmId");
-
-                    b.ToTable("employeeLeaveVM");
                 });
 
             modelBuilder.Entity("CandidateDetails_API.Model.Leads", b =>
@@ -280,12 +312,21 @@ namespace HRMS.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LeadsId"));
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int");
+
                     b.Property<DateTime?>("DateTime")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<string>("LinkedInProfile")
                         .HasColumnType("nvarchar(max)");
@@ -302,8 +343,11 @@ namespace HRMS.Migrations
                     b.Property<string>("Remarks")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool?>("isDelete")
-                        .HasColumnType("bit");
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int");
 
                     b.HasKey("LeadsId");
 
@@ -318,23 +362,56 @@ namespace HRMS.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int?>("CalId"));
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("EndDate")
+                    b.Property<DateTime>("End")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("StartDate")
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("Start")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Subject")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Title")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int");
 
                     b.HasKey("CalId");
 
                     b.ToTable("calendar");
+                });
+
+            modelBuilder.Entity("HRMS.Model.EmployeeLeaveVM", b =>
+                {
+                    b.Property<int>("leaveVmId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("leaveVmId"));
+
+                    b.Property<int?>("calId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("leaveId")
+                        .HasColumnType("int");
+
+                    b.HasKey("leaveVmId");
+
+                    b.ToTable("employeeLeaveVM");
                 });
 #pragma warning restore 612, 618
         }
