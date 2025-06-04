@@ -1,4 +1,4 @@
-import CustomInput from "../FormFieldComponent/InputComponent";
+import { FormField } from "../FormFieldComponent/FormFieldComponent";
 
 interface FilterBarProps<T> {
   filters: Partial<Record<keyof T, (string | number)[]>>;
@@ -11,6 +11,7 @@ export function FilterBar<T>({
   filters,
   selectedFilters,
   onFilterChange,
+  register,
   className,
 }: FilterBarProps<T>) {
   const handleFilterChange = (field: keyof T, value: string | number) => {
@@ -21,13 +22,11 @@ export function FilterBar<T>({
   return (
     <div className={`flex gap-2 ${className}`}>
       {Object.entries(filters).map(([field, options]) => (
-        <CustomInput
+        <FormField
           key={field}
-          label=""
           name={`filter-${field}`}
           className="form-control w-full"
           type="select"
-          value={selectedFilters[field as keyof T]?.toString() || ""}
           options={
             Array.isArray(options)
               ? options?.map((opt) => ({
@@ -37,6 +36,7 @@ export function FilterBar<T>({
               : []
           }
           onChange={(e) => handleFilterChange(field as keyof T, e.target.value)}
+          register={register}
         />
       ))}
     </div>

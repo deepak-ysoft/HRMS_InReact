@@ -16,7 +16,6 @@ import { ConfirmDelete } from "../../../components/DeletionConfirm/ConfirmDelete
 import { DeleteLeave } from "../../../services/Employee Management/EmployeeLeave/DeleteLeave.query";
 import { toast } from "react-toastify";
 import dayjs from "dayjs";
-import { EmployeeLeave } from "../../../types/IEmployeeLeave.types";
 
 export const LeavePage: React.FC = () => {
   const navigate = useNavigate();
@@ -133,7 +132,7 @@ export const LeavePage: React.FC = () => {
   return (
     <>
       <BreadCrumbsComponent />
-      <div className="bg-base-100 min-h-[650px] p-3 rounded-lg shadow-md">
+      <div className="bg-base-100 min-h-[780px] p-3 rounded-lg shadow-md">
         <div className="mx-5 mt-3 mb-5">
           <div className="grid grid-cols-9 mb-3 items-center">
             <div className="col-span-8">

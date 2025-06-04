@@ -2,13 +2,12 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Candidate } from "../../../types/ICandidate";
-import CustomInput from "../../../components/FormFieldComponent/InputComponent";
-import { validateCandidateForm } from "./ValidateFrom";
 import { Button } from "../../../components/ButtonComponent/ButtonComponent";
 import { addEditCandidateApi } from "../../../services/Candidate/AddEditCandidate.query";
 import { useMutation } from "@tanstack/react-query";
 import { BreadCrumbsComponent } from "../../../components/Breadcrumbs/BreadCrumbsComponents";
 import { toast } from "react-toastify";
+import { FormField } from "../../../components/FormFieldComponent/FormFieldComponent";
 
 const defaultValues: Partial<Candidate> = {
   id: "",
@@ -39,8 +38,8 @@ const CandidateForm = () => {
   const {
     handleSubmit,
     setValue,
+    register,
     reset,
-    setError,
     formState: { errors, isSubmitting },
     watch,
   } = useForm<Candidate>({ defaultValues });
@@ -65,13 +64,6 @@ const CandidateForm = () => {
   });
 
   const onSubmit = (data: Candidate) => {
-    const validationErrors = validateCandidateForm(data);
-    if (Object.keys(validationErrors).length > 0) {
-      Object.entries(validationErrors).forEach(([key, message]) => {
-        setError(key as string, { type: "manual", message: message as string });
-      });
-      return;
-    }
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {
       if (value !== null && value !== undefined) {
@@ -104,142 +96,162 @@ const CandidateForm = () => {
         className=" bg-base-100 p-8 rounded-lg shadow"
       >
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8">
-          <input
-            name="id"
-            type="hidden"
-            value={watch("id") || ""}
-            // register is not needed for hidden id, value is enough
-          />
-          <CustomInput
-            label="CV Upload"
-            name="cv"
+          <input name="id" type="hidden" value={watch("id") || ""} />
+
+          <FormField
             type="file"
-            value={watch("cv") || ""}
-            onChange={(e) => {
-              const file = (e.target as HTMLInputElement).files?.[0] || null;
-              setValue("cv", file);
-            }}
-            error={errors.cv?.message?.toString()}
+            name="cv"
+            label="Upload CV"
+            setValue={setValue}
+            registerOptions={{ required: "CV is required" }}
+            error={errors.cv}
           />
 
-          <CustomInput
-            label="Date"
-            name="date"
+          <FormField
             type="date"
-            value={watch("date") || ""}
-            onChange={(e) => setValue("date", e.target.value)}
-            error={errors.date?.message?.toString()}
-            required
+            name="date"
+            label="Date"
+            placeholder="Enter date"
+            register={register}
+            registerOptions={{ required: "Date is required" }}
+            error={errors.date}
           />
-          <CustomInput
-            label="Name"
+
+          <FormField
+            type="text"
             name="name"
-            value={watch("name") || ""}
-            onChange={(e) => setValue("name", e.target.value)}
-            error={errors.name?.message?.toString()}
-            required
+            label="Name"
+            placeholder="Enter name"
+            register={register}
+            registerOptions={{ required: "Name is required" }}
+            error={errors.name}
           />
-          <CustomInput
-            label="Contact Number"
+
+          <FormField
+            type="number"
             name="contact_No"
-            value={watch("contact_No") || ""}
-            onChange={(e) => setValue("contact_No", e.target.value)}
-            error={errors.contact_No?.message?.toString()}
-            required
+            label="Contact Number"
+            placeholder="Enter contact number"
+            register={register}
+            registerOptions={{ required: "Contact Number is required" }}
+            error={errors.contact_No}
           />
-          <CustomInput
-            label="Linkedin Profile"
+
+          <FormField
+            type="text"
             name="linkedin_Profile"
-            value={watch("linkedin_Profile") || ""}
-            onChange={(e) => setValue("linkedin_Profile", e.target.value)}
-            error={errors.linkedin_Profile?.message?.toString()}
-            required
+            label="LinkedIn Profile"
+            placeholder="Enter LinkedIn Profile URL"
+            register={register}
+            registerOptions={{ required: "LinkedIn Profile is required" }}
+            error={errors.linkedin_Profile}
           />
-          <CustomInput
-            label="Email"
+
+          <FormField
+            type="email"
             name="email_ID"
-            value={watch("email_ID") || ""}
-            onChange={(e) => setValue("email_ID", e.target.value)}
-            error={errors.email_ID?.message?.toString()}
-            required
+            label="Email"
+            placeholder="Enter email"
+            register={register}
+            registerOptions={{ required: "Email is required" }}
+            error={errors.email_ID}
           />
-          <CustomInput
-            label="Experience"
+
+          <FormField
+            type="text"
             name="experience"
-            value={watch("experience") || ""}
-            onChange={(e) => setValue("experience", e.target.value)}
-            error={errors.experience?.message?.toString()}
-            required
+            label="Experience"
+            placeholder="Enter experience"
+            register={register}
+            registerOptions={{ required: "Experience is required" }}
+            error={errors.experience}
           />
-          <CustomInput
-            label="Skills"
+
+          <FormField
+            type="text"
             name="skills"
-            value={watch("skills") || ""}
-            onChange={(e) => setValue("skills", e.target.value)}
-            error={errors.skills?.message?.toString()}
-            required
+            label="Skills"
+            placeholder="Enter skills"
+            register={register}
+            registerOptions={{ required: "Skills are required" }}
+            error={errors.skills}
           />
-          <CustomInput
-            label="CTC"
+
+          <FormField
+            type="number"
             name="ctc"
-            value={watch("ctc") || ""}
-            onChange={(e) => setValue("ctc", e.target.value)}
-            error={errors.ctc?.message?.toString()}
-            required
+            label="CTC"
+            placeholder="Enter CTC"
+            register={register}
+            registerOptions={{ required: "CTC is required" }}
+            error={errors.ctc}
           />
-          <CustomInput
-            label="ETC"
+
+          <FormField
+            type="number"
             name="etc"
-            value={watch("etc") || ""}
-            onChange={(e) => setValue("etc", e.target.value)}
-            error={errors.etc?.message?.toString()}
-            required
+            label="ETC"
+            placeholder="Enter ETC"
+            register={register}
+            registerOptions={{ required: "ETC is required" }}
+            error={errors.etc}
           />
-          <CustomInput
-            label="Notice Period"
+
+          <FormField
+            type="number"
             name="notice_Period"
-            value={watch("notice_Period") || ""}
-            onChange={(e) => setValue("notice_Period", e.target.value)}
-            error={errors.notice_Period?.message?.toString()}
-            required
+            label="Notice Period"
+            placeholder="Enter Notice Period"
+            register={register}
+            registerOptions={{ required: "Notice Period is required" }}
+            error={errors.notice_Period}
           />
-          <CustomInput
-            label="Current Location"
+
+          <FormField
+            type="text"
             name="current_Location"
-            value={watch("current_Location") || ""}
-            onChange={(e) => setValue("current_Location", e.target.value)}
-            error={errors.current_Location?.message?.toString()}
-            required
+            label="Current Location"
+            placeholder="Enter current location"
+            register={register}
+            registerOptions={{ required: "Current Location is required" }}
+            error={errors.current_Location}
           />
-          <CustomInput
-            label="Preferred Location"
+
+          <FormField
+            type="text"
             name="prefer_Location"
-            value={watch("prefer_Location") || ""}
-            onChange={(e) => setValue("prefer_Location", e.target.value)}
-            error={errors.prefer_Location?.message?.toString()}
-            required
+            label="Preferred Location"
+            placeholder="Enter preferred location"
+            register={register}
+            registerOptions={{ required: "Preferred Location is required" }}
+            error={errors.prefer_Location}
           />
-          <CustomInput
-            label="Reason For Job Change"
+
+          <FormField
+            type="text"
             name="reason_For_Job_Change"
-            value={watch("reason_For_Job_Change") || ""}
-            onChange={(e) => setValue("reason_For_Job_Change", e.target.value)}
-            error={errors.reason_For_Job_Change?.message?.toString()}
-            required
+            label="Reason For Job Change"
+            placeholder="Enter reason for job change"
+            register={register}
+            registerOptions={{ required: "Reason For Job Change is required" }}
+            error={errors.reason_For_Job_Change}
           />
-          <CustomInput
-            label="Schedule Interview"
-            name="schedule_Interview"
+
+          <FormField
             type="datetime-local"
-            value={watch("schedule_Interview") || ""}
-            onChange={(e) => setValue("schedule_Interview", e.target.value)}
-            error={errors.schedule_Interview?.message?.toString()}
-            required
+            name="schedule_Interview"
+            label="Schedule Interview"
+            register={register}
+            registerOptions={{ required: "Schedule Interview is required" }}
+            error={errors.schedule_Interview}
           />
-          <CustomInput
-            label="Interview Status"
-            name="schedule_Interview_status"
+          <FormField
             type="radio"
+            name="schedule_Interview_status"
+            label="Interview Status"
+            register={register}
+            registerOptions={{ required: "Interview Status is required" }}
+            error={errors.schedule_Interview_status}
             options={[
               {
                 label: "Needs Improvement",
@@ -257,30 +269,24 @@ const CandidateForm = () => {
                 style: "text-green-600",
               },
             ]}
-            value={watch("schedule_Interview_status") || ""}
-            onChange={(e) =>
-              setValue("schedule_Interview_status", e.target.value)
-            }
-            error={errors.schedule_Interview_status?.message?.toString()}
-            className="mx-2 mt-6"
           />
-          <CustomInput
-            label="Roles"
-            name="roles"
+
+          <FormField
             type="textarea"
-            value={watch("roles") || ""}
-            onChange={(e) => setValue("roles", e.target.value)}
-            error={errors.roles?.message?.toString()}
+            name="roles"
+            label="Roles"
+            register={register}
+            registerOptions={{ required: "Roles are required" }}
+            error={errors.roles}
             rows={3}
-            required
           />
-          <CustomInput
-            label="Comments"
+
+          <FormField
             type="textarea"
             name="comments"
-            value={watch("comments") || ""}
-            onChange={(e) => setValue("comments", e.target.value)}
-            error={errors.comments?.message?.toString()}
+            label="Comments"
+            register={register}
+            error={errors.comments}
             rows={3}
           />
         </div>

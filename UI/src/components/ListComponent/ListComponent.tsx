@@ -28,7 +28,7 @@ export function ListTable<
 >({ columns, data }: ListTableProps<T>) {
   return (
     <div className="card z-0  ">
-      <div className="card-body pt-0 ">
+      <div className="card-body pt-3 ">
         <table className="table table-hover">
           <thead>
             <tr className="text-[15px]">
@@ -52,7 +52,7 @@ export function ListTable<
             {data.map((row, idx) => (
               <tr
                 key={idx}
-                className="h-11 hover:bg-base-300 transition-all duration-300 text-[15px]"
+                className="h-12 hover:bg-base-300 transition-all duration-300 text-[16px]"
               >
                 {columns.map((col, index) => (
                   <td

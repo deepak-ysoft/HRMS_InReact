@@ -6,7 +6,6 @@ import interactionPlugin from "@fullcalendar/interaction"; // for drag, drop, cl
 import { BreadCrumbsComponent } from "../../components/Breadcrumbs/BreadCrumbsComponents";
 import { useQuery } from "@tanstack/react-query";
 import { GetCalendarQuery } from "../../services/Calendar/GetCalendarEvents.query";
-import { CalendarEvent } from "../../types/Calendar.type";
 import { useState } from "react";
 import { ICalendar } from "../../types/ICalendar.type";
 import { GetCalendarByIdQuery } from "../../services/Calendar/GetCalendarDetails.query";
@@ -20,7 +19,7 @@ import { ConfirmDelete } from "../../components/DeletionConfirm/ConfirmDelete";
 import { handleEventDrop } from "./handleEventDrop";
 
 const Calendar = () => {
-  const { data, isPending, refetch } = useQuery<{ data: CalendarEvent[] }>({
+  const { data, isPending, refetch } = useQuery<{ data: ICalendar[] }>({
     queryKey: ["getCalendar"],
     queryFn: GetCalendarQuery,
   });
@@ -118,11 +117,11 @@ const Calendar = () => {
             }}
             eventDrop={handleEventDrop}
             events={(data?.data ?? []).map((item) => ({
-              id: item.calId.toString(),
-              title: item.title.toString(),
-              start: item.start,
-              end: item.end,
-              description: item.description,
+              id: item?.calId?.toString() ?? "",
+              title: item?.title.toString(),
+              start: item?.start,
+              end: item?.end,
+              description: item?.description,
               backgroundColor: "rgb(202,194,255)",
               borderColor: "rgb(202,194,255)", // green-500
               textColor: "#000000",

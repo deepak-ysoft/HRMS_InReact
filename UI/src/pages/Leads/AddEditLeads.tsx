@@ -6,12 +6,13 @@ import { toast } from "react-toastify";
 import { ILeads } from "../../types/ILeads.type";
 import { AddEditLeadsQuery } from "../../services/Leads/AddEditLeads.query";
 import { BreadCrumbsComponent } from "../../components/Breadcrumbs/BreadCrumbsComponents";
-import CustomInput from "../../components/FormFieldComponent/InputComponent";
+import { FormField } from "../../components/FormFieldComponent/FormFieldComponent";
 import { Button } from "../../components/ButtonComponent/ButtonComponent";
+import { validateLeadsForm } from "../../formValidation/validateLeadsForm";
 
 const defaultValues: Partial<ILeads> = {
   leadsId: 0,
-  dateTime: "", // ISO 8601 date string
+  dateTime: "",
   linkedInProfile: "",
   post: "",
   email: "",
@@ -27,8 +28,10 @@ export const LeadForm = () => {
     handleSubmit,
     setValue,
     reset,
+    setError,
     formState: { errors, isSubmitting },
     watch,
+    register,
   } = useForm<ILeads>({ defaultValues });
 
   useEffect(() => {
@@ -39,7 +42,7 @@ export const LeadForm = () => {
     }
   }, [editData, setValue]);
 
-  const { mutate: SubmitLeave } = useMutation({
+  const { mutate: SubmitLead } = useMutation({
     mutationFn: (formData: FormData) => AddEditLeadsQuery(formData),
     onSuccess: (data) => {
       if (data.isSuccess) toast.success(data.message);
@@ -53,9 +56,19 @@ export const LeadForm = () => {
   });
 
   const onSubmit = (data: ILeads) => {
+    const validationErrors = validateLeadsForm(data);
+    if (Object.keys(validationErrors).length > 0) {
+      Object.entries(validationErrors).forEach(([key, message]) => {
+        setError(key as string, {
+          type: "manual",
+          message: message as string,
+        });
+      });
+      return;
+    }
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {
-      if (value !== null || value !== undefined) {
+      if (value !== null && value !== undefined) {
         if (key === "leadsId") {
           formData.append(key, data.leadsId ? String(data.leadsId) : "0");
         } else {
@@ -63,8 +76,9 @@ export const LeadForm = () => {
         }
       }
     });
-    SubmitLeave(formData);
+    SubmitLead(formData);
   };
+
   return (
     <>
       <BreadCrumbsComponent />
@@ -80,60 +94,58 @@ export const LeadForm = () => {
       >
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-x-8">
           <input name="leadsId" type="hidden" value={watch("leadsId") || 0} />
-          <CustomInput
-            label="Date & Time"
-            name="dateTime"
+          <FormField
             type="datetime-local"
-            value={watch("dateTime") || ""}
-            onChange={(e) => setValue("dateTime", e.target.value)}
-            error={errors.dateTime?.message?.toString()}
-            required
+            name="dateTime"
+            label="Date & Time"
+            register={register}
+            registerOptions={{ required: "Date & Time is required" }}
+            error={errors.dateTime}
           />
-          <CustomInput
-            label="LinkedIn Profile"
+          <FormField
+            type="text"
             name="linkedInProfile"
-            type="text"
-            value={watch("linkedInProfile") || ""}
-            onChange={(e) => setValue("linkedInProfile", e.target.value)}
-            error={errors.linkedInProfile?.message?.toString()}
-            required
+            label="LinkedIn Profile"
+            placeholder="Enter LinkedIn Profile"
+            register={register}
+            registerOptions={{ required: "LinkedIn Profile is required" }}
+            error={errors.linkedInProfile}
           />
-          <CustomInput
-            label="Post"
+          <FormField
+            type="text"
             name="post"
-            type="text"
-            value={watch("post") || ""}
-            onChange={(e) => setValue("post", e.target.value)}
-            error={errors.post?.message?.toString()}
-            required
+            label="Post"
+            placeholder="Enter Post"
+            register={register}
+            registerOptions={{ required: "Post is required" }}
+            error={errors.post}
           />
-
-          <CustomInput
-            label="Email"
+          <FormField
+            type="text"
             name="email"
-            type="text"
-            value={watch("email") || ""}
-            onChange={(e) => setValue("email", e.target.value)}
-            error={errors.email?.message?.toString()}
-            required
+            label="Email"
+            placeholder="Enter Email"
+            register={register}
+            registerOptions={{ required: "Email is required" }}
+            error={errors.email}
           />
-          <CustomInput
-            label="Mobile No"
+          <FormField
+            type="text"
             name="number"
-            type="text"
-            value={watch("number") || ""}
-            onChange={(e) => setValue("number", e.target.value)}
-            error={errors.number?.message?.toString()}
-            required
+            label="Mobile No"
+            placeholder="Enter Mobile No"
+            register={register}
+            registerOptions={{ required: "Mobile No is required" }}
+            error={errors.number}
           />
-          <CustomInput
-            label="Remarks"
-            name="remarks"
+          <FormField
             type="textarea"
-            value={watch("remarks") || ""}
-            onChange={(e) => setValue("remarks", e.target.value)}
-            error={errors.remarks?.message?.toString()}
-            required
+            name="remarks"
+            label="Remarks"
+            placeholder="Enter Remarks"
+            register={register}
+            registerOptions={{ required: "Remarks are required" }}
+            error={errors.remarks}
           />
         </div>
         <Button

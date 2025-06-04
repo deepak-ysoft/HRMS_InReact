@@ -1,11 +1,11 @@
 // validateForm.ts
-import { Candidate } from "../../../types/ICandidate";
+import { Candidate } from "../types/ICandidate";
 import {
   validateEmail,
   validateNumber,
   validatePhoneNumber,
   validateRequired,
-} from "../../../utils/validation/ValidationUtils";
+} from "../utils/validation/ValidationUtils";
 
 export const validateCandidateForm = (form: Candidate) => {
   const errors: { [key: string]: string } = {};

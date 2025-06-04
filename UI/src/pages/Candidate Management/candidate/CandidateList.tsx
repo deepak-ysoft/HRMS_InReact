@@ -175,7 +175,7 @@ const CandidateListPage: React.FC = () => {
   return (
     <>
       <BreadCrumbsComponent />
-      <div className="bg-base-100 min-h-[650px] p-3 rounded-lg shadow-md">
+      <div className="bg-base-100 min-h-[780px] p-3 rounded-lg shadow-md">
         <div className="mx-5 mt-5 mb-5">
           <div className="grid grid-cols-10 mb-5 items-center">
             <div className="col-span-2">
@@ -184,7 +184,7 @@ const CandidateListPage: React.FC = () => {
             <div className="flex justify-end col-span-6 pr-3">
               <SearchBar
                 iconClass="right-0"
-                className="transition-all p-2 pl-3 mr-12 border border-[rgb(202,194,255)] rounded-xl duration-300 ease-in-out focus:outline-none focus:ring-0 focus:border-[rgb(159,145,251)]"
+                className="transition-all p-2 pl-6 mr-12 border border-[rgb(202,194,255)] rounded-s-3xl focus:outline-none focus:ring-0 focus:border-[rgb(159,145,251)]"
                 onChange={(e) => setSearchValue(e.target.value)}
               />
             </div>

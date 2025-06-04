@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Employee } from "../../../types/IEmployee.type";
-import CustomInput from "../../../components/FormFieldComponent/InputComponent";
+import { FormField } from "../../../components/FormFieldComponent/FormFieldComponent";
 import { Button } from "../../../components/ButtonComponent/ButtonComponent";
 import { AddEmployeeasync } from "../../../services/Employee Management/Employee/AddEmployee.query";
 import { useMutation } from "@tanstack/react-query";
@@ -11,6 +11,7 @@ import { UserRoles } from "../../../types/Enum/UserRoles";
 import { EditEmployeeasync } from "../../../services/Employee Management/Employee/EditEmployee.query";
 import { Gender } from "../../../types/Enum/Gender";
 import { toast } from "react-toastify";
+import { validateEmployeeForm } from "../../../formValidation/validateEmployeeForm";
 
 const defaultValues: Partial<Employee> = {
   empId: 0,
@@ -28,7 +29,7 @@ const defaultValues: Partial<Employee> = {
   imagePath: "",
   photo: null,
   isDelete: false,
-  role: undefined, // Fix: must be UserRoles or undefined
+  role: undefined,
   isActive: true,
   resetToken: "",
   resetTokenExpiration: "",
@@ -43,8 +44,10 @@ export const EmployeeForm = () => {
     handleSubmit,
     setValue,
     reset,
+    setError,
     formState: { errors, isSubmitting },
     watch,
+    register,
   } = useForm<Employee>({ defaultValues });
 
   useEffect(() => {
@@ -77,7 +80,16 @@ export const EmployeeForm = () => {
   });
 
   const onSubmit = (data: Employee) => {
-    // Add validation as needed
+    const validationErrors = validateEmployeeForm(data);
+    if (Object.keys(validationErrors).length > 0) {
+      Object.entries(validationErrors).forEach(([key, message]) => {
+        setError(key as keyof Employee, {
+          type: "manual",
+          message: message as string,
+        });
+      });
+      return;
+    }
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {
       if (value !== null && value !== undefined) {
@@ -109,134 +121,125 @@ export const EmployeeForm = () => {
       >
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8">
           <input name="empId" type="hidden" value={watch("empId") || 0} />
-          <CustomInput
-            label="Photo"
-            name="photo"
+          <FormField
             type="file"
-            value={watch("photo") || ""}
-            onChange={(e) => {
-              const file = (e.target as HTMLInputElement).files?.[0] || null;
-              setValue("photo", file);
-            }}
-            error={errors.photo?.message?.toString()}
+            name="photo"
+            label="Photo"
+            setValue={setValue}
+            registerOptions={{ required: !editData && "Photo is required" }}
+            error={errors.photo}
           />
-          <CustomInput
-            label="Name"
+          <FormField
+            type="text"
             name="empName"
-            value={watch("empName") || ""}
-            onChange={(e) => setValue("empName", e.target.value)}
-            error={errors.empName?.message?.toString()}
-            required
+            label="Name"
+            register={register}
+            registerOptions={{ required: "Name is required" }}
+            error={errors.empName}
           />
-          <CustomInput
-            label="Email"
+          <FormField
+            type="email"
             name="empEmail"
-            value={watch("empEmail") || ""}
-            onChange={(e) => setValue("empEmail", e.target.value)}
-            error={errors.empEmail?.message?.toString()}
-            required
+            label="Email"
+            register={register}
+            registerOptions={{ required: "Email is required" }}
+            error={errors.empEmail}
           />
           {!editData && (
-            <CustomInput
-              label="Password"
+            <FormField
+              type="password"
               name="empPassword"
-              type="password"
-              value={watch("empPassword") || ""}
-              onChange={(e) => setValue("empPassword", e.target.value)}
-              error={errors.empPassword?.message?.toString()}
-              required={!editData}
+              label="Password"
+              register={register}
+              registerOptions={{ required: "Password is required" }}
+              error={errors.empPassword}
             />
           )}
           {!editData && (
-            <CustomInput
-              label="Confirm Password"
-              name="empPasswordConfirm"
+            <FormField
               type="password"
-              value={watch("empPasswordConfirm") || ""}
-              onChange={(e) => setValue("empPasswordConfirm", e.target.value)}
-              error={errors.empPasswordConfirm?.message?.toString()}
-              required={!editData}
+              name="empPasswordConfirm"
+              label="Confirm Password"
+              register={register}
+              registerOptions={{ required: "Confirm Password is required" }}
+              error={errors.empPasswordConfirm}
             />
           )}
-          <CustomInput
-            label="Mobile Number"
+          <FormField
+            type="text"
             name="empNumber"
-            value={watch("empNumber") || ""}
-            onChange={(e) => setValue("empNumber", e.target.value)}
-            error={errors.empNumber?.message?.toString()}
-            required
+            label="Mobile Number"
+            register={register}
+            registerOptions={{ required: "Mobile Number is required" }}
+            error={errors.empNumber}
           />
-          <CustomInput
-            label="Date of Birth"
-            name="empDateOfBirth"
+          <FormField
             type="date"
-            value={watch("empDateOfBirth") || ""}
-            onChange={(e) => setValue("empDateOfBirth", e.target.value)}
-            error={errors.empDateOfBirth?.message?.toString()}
-            required
+            name="empDateOfBirth"
+            label="Date of Birth"
+            register={register}
+            registerOptions={{ required: "Date of Birth is required" }}
+            error={errors.empDateOfBirth}
           />
-          <CustomInput
-            label="Gender"
-            name="empGender"
+          <FormField
             type="select"
-            value={String(watch("empGender") ?? "")}
-            onChange={(e) => setValue("empGender", Number(e.target.value))}
+            name="empGender"
+            label="Gender"
+            register={register}
+            registerOptions={{ required: "Gender is required" }}
+            error={errors.empGender}
             options={Object.values(Gender)
               .filter((value) => typeof value === "number")
               .map((value) => ({
+                value,
                 label: Gender[value as number],
-                value: String(value),
               }))}
-            error={errors.empGender?.message?.toString()}
-            required
           />
-          <CustomInput
-            label="Job Title"
+          <FormField
+            type="text"
             name="empJobTitle"
-            value={watch("empJobTitle") || ""}
-            onChange={(e) => setValue("empJobTitle", e.target.value)}
-            error={errors.empJobTitle?.message?.toString()}
-            required
+            label="Job Title"
+            register={register}
+            registerOptions={{ required: "Job Title is required" }}
+            error={errors.empJobTitle}
           />
-          <CustomInput
-            label="Experience"
+          <FormField
+            type="text"
             name="empExperience"
-            value={watch("empExperience") || ""}
-            onChange={(e) => setValue("empExperience", e.target.value)}
-            error={errors.empExperience?.message?.toString()}
-            required
+            label="Experience"
+            register={register}
+            registerOptions={{ required: "Experience is required" }}
+            error={errors.empExperience}
           />
-          <CustomInput
-            label="Date of Joining"
-            name="empDateofJoining"
+          <FormField
             type="date"
-            value={watch("empDateofJoining") || ""}
-            onChange={(e) => setValue("empDateofJoining", e.target.value)}
-            error={errors.empDateofJoining?.message?.toString()}
-            required
+            name="empDateofJoining"
+            label="Date of Joining"
+            register={register}
+            registerOptions={{ required: "Date of Joining is required" }}
+            error={errors.empDateofJoining}
           />
-          <CustomInput
-            label="Address"
+          <FormField
+            type="text"
             name="empAddress"
-            value={watch("empAddress") || ""}
-            onChange={(e) => setValue("empAddress", e.target.value)}
-            error={errors.empAddress?.message?.toString()}
-            required
+            label="Address"
+            register={register}
+            registerOptions={{ required: "Address is required" }}
+            error={errors.empAddress}
           />
-          <CustomInput
-            label="Role"
-            name="Role"
+          <FormField
             type="select"
-            value={String(watch("role") ?? "")}
-            onChange={(e) => setValue("role", Number(e.target.value))}
+            name="role"
+            label="Role"
+            register={register}
+            registerOptions={{ required: "Role is required" }}
+            error={errors.role}
             options={Object.values(UserRoles)
               .filter((value) => typeof value === "number")
               .map((value) => ({
+                value,
                 label: UserRoles[value as number],
-                value: String(value),
               }))}
-            error={errors.role?.message?.toString()}
-            required
           />
         </div>
         <Button

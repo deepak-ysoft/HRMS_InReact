@@ -2,12 +2,19 @@ import React from "react";
 import { useLocation } from "react-router-dom";
 import { Candidate } from "../../../types/ICandidate";
 import { BreadCrumbsComponent } from "../../../components/Breadcrumbs/BreadCrumbsComponents";
-import CustomInput from "../../../components/FormFieldComponent/InputComponent";
 import { Button } from "../../../components/ButtonComponent/ButtonComponent";
 import { FaDownload } from "react-icons/fa";
+import { FormField } from "../../../components/FormFieldComponent/FormFieldComponent";
+import { useForm } from "react-hook-form";
+
 const CandidateDetails: React.FC = () => {
   const location = useLocation();
   const candidate: Candidate = location.state as Candidate;
+
+  // Set up react-hook-form with default values from candidate
+  const { register } = useForm<Candidate>({
+    defaultValues: candidate,
+  });
 
   return (
     <>
@@ -21,41 +28,47 @@ const CandidateDetails: React.FC = () => {
           {/* Profile Details Box */}
           <div className="col-span-2  rounded-lg p-6 bg-base-100 shadow-md mb-4">
             <h2 className="text-xl font-semibold mb-4">Profile Details</h2>
-            <CustomInput
+            <FormField
+              type="text"
               label="Name"
               name="name"
-              value={candidate.name || "-"}
-              onChange={() => {}}
+              register={register}
+              disabled
             />
-            <CustomInput
+            <FormField
+              type="text"
               label="Email"
               name="email_ID"
-              value={candidate.email_ID || "-"}
-              onChange={() => {}}
+              register={register}
+              disabled
             />
-            <CustomInput
+            <FormField
+              type="text"
               label="Contact No"
               name="contact_No"
-              value={candidate.contact_No || "-"}
-              onChange={() => {}}
+              register={register}
+              disabled
             />
-            <CustomInput
+            <FormField
+              type="text"
               label="LinkedIn"
               name="linkedin_Profile"
-              value={candidate.linkedin_Profile || "-"}
-              onChange={() => {}}
+              register={register}
+              disabled
             />
-            <CustomInput
+            <FormField
+              type="text"
               label="Roles"
               name="roles"
-              value={candidate.roles || "-"}
-              onChange={() => {}}
+              register={register}
+              disabled
             />
-            <CustomInput
+            <FormField
+              type="text"
               label="Current Location"
               name="current_Location"
-              value={candidate.current_Location || "-"}
-              onChange={() => {}}
+              register={register}
+              disabled
             />
           </div>
           {/* Other Details Box */}
@@ -108,71 +121,82 @@ const CandidateDetails: React.FC = () => {
                 />
               )}
             </div>
-            <CustomInput
+            <FormField
+              type="text"
               label="Preferred Location"
               name="prefer_Location"
-              value={candidate.prefer_Location || "-"}
-              onChange={() => {}}
+              register={register}
+              disabled
             />
-            <CustomInput
+            <FormField
+              type="text"
               label="Experience"
               name="experience"
-              value={candidate.experience || "-"}
-              onChange={() => {}}
+              register={register}
+              disabled
             />
-            <CustomInput
+            <FormField
+              type="text"
               label="Skills"
               name="skills"
-              value={candidate.skills || "-"}
-              onChange={() => {}}
+              register={register}
+              disabled
             />
-            <CustomInput
+            <FormField
+              type="text"
               label="CTC"
               name="ctc"
-              value={candidate.ctc || "-"}
-              onChange={() => {}}
+              register={register}
+              disabled
             />
-            <CustomInput
+            <FormField
+              type="text"
               label="ETC"
               name="etc"
-              value={candidate.etc || "-"}
-              onChange={() => {}}
+              register={register}
+              disabled
             />
-            <CustomInput
+            <FormField
+              type="text"
               label="Notice Period"
               name="notice_Period"
-              value={candidate.notice_Period || "-"}
-              onChange={() => {}}
+              register={register}
+              disabled
             />
-            <CustomInput
+            <FormField
+              type="text"
               label="Schedule Interview"
               name="schedule_Interview"
-              value={candidate.schedule_Interview || "-"}
-              onChange={() => {}}
+              register={register}
+              disabled
             />
-            <CustomInput
+            <FormField
+              type="text"
               label="Interview Status"
               name="schedule_Interview_status"
-              value={candidate.schedule_Interview_status || "-"}
-              onChange={() => {}}
+              register={register}
+              disabled
             />
-            <CustomInput
+            <FormField
+              type="text"
               label="Reason For Job Change"
               name="reason_For_Job_Change"
-              value={candidate.reason_For_Job_Change || "-"}
-              onChange={() => {}}
+              register={register}
+              disabled
             />
-            <CustomInput
+            <FormField
+              type="text"
               label="Comments"
               name="comments"
-              value={candidate.comments || "-"}
-              onChange={() => {}}
+              register={register}
+              disabled
             />
-            <CustomInput
+            <FormField
+              type="text"
               label="Date"
               name="date"
-              value={candidate.date || "-"}
-              onChange={() => {}}
+              register={register}
+              disabled
             />
           </div>
         </div>

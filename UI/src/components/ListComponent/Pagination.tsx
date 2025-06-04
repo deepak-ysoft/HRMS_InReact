@@ -1,5 +1,6 @@
 import React from "react";
-import CustomInput from "../FormFieldComponent/InputComponent";
+import { useForm } from "react-hook-form";
+import { FormField } from "../FormFieldComponent/FormFieldComponent";
 
 interface PaginationProps {
   page: number;
@@ -10,6 +11,10 @@ interface PaginationProps {
   onPageSizeChange?: (size: number) => void;
 }
 
+type PageSizeForm = {
+  pageSize: number;
+};
+
 const Pagination: React.FC<PaginationProps> = ({
   page,
   pageSize,
@@ -19,6 +24,26 @@ const Pagination: React.FC<PaginationProps> = ({
   isShowSize = false,
 }) => {
   const totalPages = pageSize > 0 ? Math.ceil(totalCount / pageSize) : 1;
+
+  // Use react-hook-form for pageSize select, like MyForm.tsx
+  const { register, setValue } = useForm<PageSizeForm>({
+    defaultValues: { pageSize },
+  });
+
+  // Handler for page size change
+  const handlePageSizeChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    const target = e.target as HTMLSelectElement;
+    const newSize = Number(target.value);
+    setValue("pageSize", newSize);
+
+    if (typeof onPageSizeChange === "function") {
+      onPageSizeChange(newSize);
+    }
+  };
 
   return (
     <>
@@ -94,22 +119,22 @@ const Pagination: React.FC<PaginationProps> = ({
                 </button>
               </li>
             </ul>
-          </nav>{" "}
+          </nav>
           {isShowSize && (
-            <CustomInput
-              type="select"
-              name="pageSize"
-              label=""
-              value={pageSize}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                onPageSizeChange && onPageSizeChange(Number(e.target.value))
-              }
-              options={[5, 10, 20, 50].map((size) => ({
-                label: `${size}`,
-                value: String(size),
-              }))}
-              className="ml-2 border rounded  py-1"
-            />
+            <div className="ml-2 min-w-[90px]">
+              <FormField
+                type="select"
+                name="pageSize"
+                label=""
+                register={register}
+                onChange={handlePageSizeChange}
+                options={[10, 20, 50].map((size) => ({
+                  label: `${size}`,
+                  value: String(size),
+                }))}
+                className="border rounded py-1"
+              />
+            </div>
           )}
         </div>
       )}

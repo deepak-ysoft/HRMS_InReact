@@ -1,3 +1,5 @@
+import { RegisterOptions, UseFormRegisterReturn } from "react-hook-form";
+
 type Option = {
   label: string;
   value: string;
@@ -23,10 +25,8 @@ export interface CustomInputProps {
   label: string;
   name: string;
   type?: InputType;
-  value: string | number | boolean | File | null | undefined; // Support string, number, boolean, File, null, or undefined
-  onChange: React.ChangeEventHandler<
-    HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-  >;
+  value?: string | number | boolean | File | null | undefined; // Support string, number, boolean, File, null, or undefined
+
   onBlur?: React.FocusEventHandler<
     HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
   >;
@@ -38,4 +38,12 @@ export interface CustomInputProps {
   rows?: number; // Used for textarea
   disabled?: boolean; // <-- add this line
   lableClass?: string;
+  register?: (name: string, options?: RegisterOptions) => UseFormRegisterReturn; // 👈 Add this
+  validation?: {
+    required?: string | boolean;
+    maxLength?: {
+      value: number;
+      message: string;
+    };
+  };
 }

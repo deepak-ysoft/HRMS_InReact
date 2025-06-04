@@ -2,10 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
 import { AddEditAssets } from "../../../services/Employee Management/EmployeeAssets/AddUpdateAssets.query";
-import CustomInput from "../../../components/FormFieldComponent/InputComponent";
+import { FormField } from "../../../components/FormFieldComponent/FormFieldComponent";
 import { Button } from "../../../components/ButtonComponent/ButtonComponent";
 import { EmployeeAsset } from "../../../types/IEmployeeAsset.types";
 import { toast } from "react-toastify";
+import { validateEmployeeAssetForm } from "../../../formValidation/validateEmployeeAssetForm";
 
 const defaultValues: Partial<EmployeeAsset> = {
   assetId: 0,
@@ -29,27 +30,18 @@ export const AssetsForm = ({
     handleSubmit,
     setValue,
     reset,
+    setError,
     formState: { errors, isSubmitting },
     watch,
+    register,
   } = useForm<EmployeeAsset>({ defaultValues });
+
   const apiPath = import.meta.env.VITE_API_BASE_URL;
   const [previewImage, setPreviewImage] = useState<string>(
-    apiPath + editData?.imagePath ||
+    apiPath + (editData?.imagePath || "") ||
       "https://img.daisyui.com/images/profile/demo/yellingcat@192.webp"
   );
   const imageInputRef = useRef<HTMLInputElement | null>(null);
-
-  const handleImageClick = () => {
-    imageInputRef.current?.click();
-  };
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setValue("image", file);
-      setPreviewImage(URL.createObjectURL(file));
-    }
-  };
 
   useEffect(() => {
     if (editData) {
@@ -69,6 +61,18 @@ export const AssetsForm = ({
     }
   }, [editData, setValue, reset, apiPath]);
 
+  const handleImageClick = () => {
+    imageInputRef.current?.click();
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setValue("image", file);
+      setPreviewImage(URL.createObjectURL(file));
+    }
+  };
+
   const { mutate: submitAsset } = useMutation({
     mutationFn: (formData: FormData) => AddEditAssets(formData),
     onSuccess: (data) => {
@@ -82,6 +86,16 @@ export const AssetsForm = ({
   });
 
   const onSubmit = (data: EmployeeAsset) => {
+    const validationErrors = validateEmployeeAssetForm(data);
+    if (Object.keys(validationErrors).length > 0) {
+      Object.entries(validationErrors).forEach(([key, message]) => {
+        setError(key as keyof EmployeeAsset, {
+          type: "manual",
+          message: message as string,
+        });
+      });
+      return;
+    }
     const userId = localStorage.getItem("UserId");
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {
@@ -105,7 +119,7 @@ export const AssetsForm = ({
       <form
         onSubmit={handleSubmit(onSubmit)}
         encType="multipart/form-data"
-        className="bg-base-100 p-8 mt-12 rounded-lg shadow-md min-h-[650px]"
+        className="bg-base-100 p-8 mt-12 rounded-lg shadow-md min-h-[780px]"
       >
         <div className="w-full max-w-2xl pb-5 flex items-center justify-between">
           <h2 className="text-xl font-bold">
@@ -113,8 +127,9 @@ export const AssetsForm = ({
           </h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-1 gap-x-8">
-          <input name="AssetId" type="hidden" value={watch("assetId") || 0} />
-          <input name="EmpId" type="hidden" value={watch("empId") || 0} />
+          <input name="assetId" type="hidden" value={watch("assetId") || 0} />
+          <input name="empId" type="hidden" value={watch("empId") || 0} />
+
           <div className="avatar flex justify-center">
             <div
               className="w-52 rounded-full overflow-hidden cursor-pointer"
@@ -127,7 +142,6 @@ export const AssetsForm = ({
               />
             </div>
           </div>
-
           <input
             type="file"
             ref={imageInputRef}
@@ -136,24 +150,33 @@ export const AssetsForm = ({
             onChange={handleImageChange}
           />
 
-          <CustomInput
-            label="Asset Name"
-            name="assetName"
-            value={watch("assetName") || ""}
-            onChange={(e) => setValue("assetName", e.target.value)}
-            error={errors.assetName?.message?.toString()}
-            required
+          <FormField
+            type="file"
+            name="image"
+            label="Upload Image"
+            setValue={setValue}
+            registerOptions={{ required: !editData && "Image is required" }}
+            error={errors.image}
           />
 
-          <CustomInput
-            label="Description"
-            name="description"
+          <FormField
+            type="text"
+            name="assetName"
+            label="Asset Name"
+            placeholder="Enter asset name"
+            register={register}
+            registerOptions={{ required: "Asset Name is required" }}
+            error={errors.assetName}
+          />
+
+          <FormField
             type="textarea"
-            lableClass="mt-3"
-            value={watch("description") || ""}
-            onChange={(e) => setValue("description", e.target.value)}
-            error={errors.description?.message?.toString()}
-            required
+            name="description"
+            label="Description"
+            placeholder="Enter description"
+            register={register}
+            registerOptions={{ required: "Description is required" }}
+            error={errors.description}
           />
         </div>
         <Button

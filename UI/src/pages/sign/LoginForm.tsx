@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
-import CustomInput from "../../components/FormFieldComponent/InputComponent";
+import { useForm } from "react-hook-form";
 import { LoginFormFields } from "../../types/ILogin";
 import { useMutation } from "@tanstack/react-query";
 import { loginApi } from "../../services/Auth/Login.query";
 import { toast } from "react-toastify";
+import { FormField } from "../../components/FormFieldComponent/FormFieldComponent";
+import { Button } from "../../components/ButtonComponent/ButtonComponent";
 
 const initialLoginData: LoginFormFields = {
   email: "Deepaksysoft@gmail.com",
@@ -14,61 +16,26 @@ const initialLoginData: LoginFormFields = {
 
 const LoginForm: React.FC = () => {
   const navigate = useNavigate();
-  const [form, setForm] = useState<LoginFormFields>(initialLoginData);
-  const [errors, setErrors] = useState<
-    Partial<Record<keyof LoginFormFields, string>>
-  >({});
-
-  const validate = (): typeof errors => {
-    const newErrors: typeof errors = {};
-    if (!form.email) newErrors.email = "email is required.";
-    if (!form.password) {
-      newErrors.password = "Password is required.";
-    } else if (
-      !/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}/.test(form.password)
-    ) {
-      newErrors.password =
-        "Password must have at least 8 characters, including uppercase, lowercase, number, and special character.";
-    }
-    return newErrors;
-  };
-
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
-  ) => {
-    const { name, value, type } = e.target;
-    const isCheckbox = type === "checkbox";
-    const checked = (e.target as HTMLInputElement).checked;
-
-    setForm((prev) => ({
-      ...prev,
-      [name]: isCheckbox ? checked : value,
-    }));
-  };
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormFields>({
+    defaultValues: initialLoginData,
+  });
 
   const { mutate: loginMutate } = useMutation({
     mutationFn: loginApi,
     onSuccess: (data) => {
       localStorage.setItem("token", data.token.result);
       localStorage.setItem("UserId", data.data.empId);
-      <>
-        <div className="bg-black">{toast.success(data.message)}</div>
-      </>;
-
+      toast.success(data.message);
       navigate("/dashboard");
     },
   });
 
-  const handleSubmit = (e: React.FormEvent): void => {
-    e.preventDefault();
-    const validationErrors = validate();
-    setErrors(validationErrors);
-
-    if (Object.keys(validationErrors).length === 0) {
-      loginMutate(form);
-    }
+  const onSubmit = (data: LoginFormFields) => {
+    loginMutate(data);
   };
 
   return (
@@ -92,37 +59,45 @@ const LoginForm: React.FC = () => {
       </div>
 
       {/* Form */}
-      <form className="space-y-4" onSubmit={handleSubmit} noValidate>
-        <CustomInput
-          label="email"
+      <form className="space-y-4" onSubmit={handleSubmit(onSubmit)} noValidate>
+        <FormField
+          type="email"
+          label="Email"
           name="email"
-          value={form.email}
-          onChange={handleChange}
-          required
-          error={errors.email}
           placeholder="Your email"
+          register={register}
+          registerOptions={{ required: "Email is required" }}
+          error={errors.email}
         />
-        <CustomInput
+        <FormField
+          type="password"
           label="Password"
           name="password"
-          type="password"
-          value={form.password}
-          onChange={handleChange}
-          required
-          error={errors.password}
           placeholder="Your password"
+          register={register}
+          registerOptions={{
+            required: "Password is required",
+            pattern: {
+              value: /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}/,
+              message:
+                "Password must have at least 8 characters, including uppercase, lowercase, number, and special character.",
+            },
+          }}
+          error={errors.password}
         />
-        <CustomInput
+        <FormField
+          type="checkbox"
           label="Remember Me"
           name="remember"
-          type="checkbox"
-          value={form.remember}
-          onChange={handleChange}
+          register={register}
         />
 
-        <button type="submit" className="btn btn-primary w-full">
-          Login
-        </button>
+        <Button
+          type="submit"
+          className="btn btn-primary w-full"
+          disabled={isSubmitting}
+          text={isSubmitting ? "Logging in..." : "Login"}
+        />
 
         <p className="text-sm text-center">
           Don&apos;t have an account?{" "}

@@ -90,8 +90,10 @@ namespace CandidateDetails_API.ServiceContent
         {
             Regex trimmer = new Regex(@"\s\s+");
             // Retrieve the calendar from the database
-            var hday = await _context.calendar.Where(x => x.Title == CalendarTitle.Holiday).OrderBy(x => x.Start).ToListAsync();
-            var bday = await _context.calendar.Where(x => x.Title == CalendarTitle.Birthday).OrderBy(x => x.Start).ToListAsync();
+            var data = await _context.calendar.ToListAsync();
+
+            var birthday = data.Where(x => x.Title == CalendarTitle.Birthday).OrderByDescending(x => x.Start).ToList();
+            
 
             // Return the calendar as JSON
             return new ApiResponse<dynamic>

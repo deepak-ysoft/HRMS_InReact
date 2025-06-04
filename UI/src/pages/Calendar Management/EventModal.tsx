@@ -1,9 +1,9 @@
 import React, { useEffect } from "react";
 import { ICalendar } from "../../types/ICalendar.type";
 import { useForm } from "react-hook-form";
-import CustomInput from "../../components/FormFieldComponent/InputComponent";
 import { Button } from "../../components/ButtonComponent/ButtonComponent";
 import { CalendarEventType } from "../../types/Enum/CalendarLeave";
+import { FormField } from "../../components/FormFieldComponent/FormFieldComponent";
 
 interface EventModelProps {
   open: boolean;
@@ -16,7 +16,7 @@ interface EventModelProps {
 
 const defaultValues: Partial<ICalendar> = {
   calId: 0,
-  title: undefined,
+  title: "",
   description: "",
   start: "",
   end: "",
@@ -31,11 +31,11 @@ export const EventModel: React.FC<EventModelProps> = ({
   isEdit = false,
 }) => {
   const {
+    register,
     handleSubmit,
+    formState: { errors },
     setValue,
     reset,
-    formState: { errors, isSubmitting },
-    watch,
   } = useForm<ICalendar>({ defaultValues });
 
   useEffect(() => {
@@ -49,21 +49,12 @@ export const EventModel: React.FC<EventModelProps> = ({
   }, [eventData, setValue, reset]);
 
   const handleFormSubmit = (data: ICalendar) => {
-    //  const validationErrors = validateForm(data);
-    //  if (Object.keys(validationErrors).length > 0) {
-    //    Object.entries(validationErrors).forEach(([key, message]) => {
-    //      setError(key as string, { type: "manual", message: message as string });
-    //    });
-    //    return;
-    //  }
-    if (new Date(data.start) > new Date(data.end)) {
-      alert("Start date cannot be after end date.");
-      return;
-    }
+    console.log(errors.description?.message);
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {
       formData.append(key, value);
     });
+
     onSave(formData);
   };
 
@@ -71,63 +62,66 @@ export const EventModel: React.FC<EventModelProps> = ({
 
   return (
     <div className="fixed top-0 left-0 right-0 bg-opacity-40 flex justify-center z-50">
-      <div className=" bg-base-100 rounded-lg shadow-lg border p-6 min-w-[500px]">
+      <div className="bg-base-100 rounded-lg shadow-lg border p-6 min-w-[500px]">
         <h2 className="text-xl font-semibold mb-4">
           {isEdit ? "Event Details" : "Add Event"}
         </h2>
-        <form onSubmit={handleSubmit(handleFormSubmit)} className="">
-          <input name="calId" type="hidden" value={watch("calId") || 0} />
-          <div className="grid grid-cols-1 md:grid-cols-1 gap-4 ">
-            <CustomInput
-              label="Title"
-              name="title"
+        <form
+          onSubmit={handleSubmit(handleFormSubmit)}
+          encType="multipart/form-data"
+        >
+          <input type="hidden" {...register("calId")} />
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+            <FormField
               type="select"
-              value={watch("title") || ""}
-              onChange={(e) =>
-                setValue("title", String(Number(e.target.value)))
-              }
+              name="title"
+              label="Event Title"
+              register={register}
+              registerOptions={{ required: "Event title is required" }}
+              error={errors.title}
               options={Object.values(CalendarEventType)
-                .filter((value) => typeof value === "number")
+                .filter((v) => typeof v === "number")
                 .map((value) => ({
+                  value,
                   label: CalendarEventType[value as number],
-                  value: String(value),
                 }))}
-              error={errors.title?.message?.toString()}
-              required
-              disabled={!isEdit && !!eventData}
             />
-            <CustomInput
-              label="Start Date"
+
+            <FormField
+              type="text"
               name="start"
-              type="datetime-local"
-              value={watch("start") || ""}
-              onChange={(e) => setValue("start", e.target.value)}
-              error={errors.start?.message?.toString()}
-              required
-              disabled={!isEdit && !!eventData}
+              label="Start Date"
+              placeholder="Enter start date"
+              register={register}
+              registerOptions={{ required: "Start date is required" }}
+              error={errors.start}
             />
-            <CustomInput
-              label="End Date"
+            <FormField
+              type="text"
               name="end"
-              type="datetime-local"
-              value={watch("end") || ""}
-              onChange={(e) => setValue("end", e.target.value)}
-              error={errors.end?.message?.toString()}
-              required
-              disabled={!isEdit && !!eventData}
-            />{" "}
-            <CustomInput
-              label="Description"
-              name="description"
+              label="End Date"
+              placeholder="Enter end date"
+              register={register}
+              registerOptions={{ required: "End date is required" }}
+              error={errors.end}
+            />
+            <FormField
               type="textarea"
-              value={watch("description") || ""}
-              onChange={(e) => setValue("description", e.target.value)}
-              error={errors.description?.message?.toString()}
-              rows={5}
-              required
-              disabled={!isEdit && !!eventData}
+              name="description"
+              label="Description"
+              placeholder="Enter description"
+              register={register}
+              registerOptions={{
+                required: "Description is required",
+                maxLength: {
+                  value: 10,
+                  message: "Description cannot exceed 10 characters",
+                },
+              }}
+              error={errors.description}
             />
           </div>
+
           <div className="flex gap-2 mt-6 justify-end">
             {isEdit && eventData && (
               <Button
@@ -141,7 +135,6 @@ export const EventModel: React.FC<EventModelProps> = ({
               type="submit"
               text={isEdit ? "Update" : "Add"}
               className="bg-[rgb(66,42,213)] text-white"
-              disabled={isSubmitting}
             />
             <Button
               type="button"

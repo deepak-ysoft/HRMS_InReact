@@ -4,19 +4,20 @@ import { useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
 import { AddEditLeave } from "../../../services/Employee Management/EmployeeLeave/AddEditLeave.query";
 import { BreadCrumbsComponent } from "../../../components/Breadcrumbs/BreadCrumbsComponents";
-import CustomInput from "../../../components/FormFieldComponent/InputComponent";
+import { FormField } from "../../../components/FormFieldComponent/FormFieldComponent";
 import { useLocation, useNavigate } from "react-router-dom";
 import { LeaveType, LeaveTypeLabels } from "../../../types/Enum/LeaveType";
 import { Button } from "../../../components/ButtonComponent/ButtonComponent";
 import { LeaveApprovel } from "../../../types/Enum/LeaveApprovel";
 import { toast } from "react-toastify";
+import { validateEmployeeLeaveForm } from "../../../formValidation/validateEmployeeLeaveForm";
 
 const defaultValues: Partial<EmployeeLeave> = {
   leaveId: 0,
   leaveFor: "",
   leaveType: undefined,
-  startDate: "", // ISO 8601 date string
-  endDate: "", // ISO 8601 date string
+  startDate: "",
+  endDate: "",
   empId: 0,
   isDelete: false,
   isApprove: LeaveApprovel.Panding,
@@ -30,8 +31,10 @@ export const LeaveForm = () => {
     handleSubmit,
     setValue,
     reset,
+    setError,
     formState: { errors, isSubmitting },
     watch,
+    register,
   } = useForm<EmployeeLeave>({ defaultValues });
 
   useEffect(() => {
@@ -56,10 +59,20 @@ export const LeaveForm = () => {
   });
 
   const onSubmit = (data: EmployeeLeave) => {
+    const validationErrors = validateEmployeeLeaveForm(data);
+    if (Object.keys(validationErrors).length > 0) {
+      Object.entries(validationErrors).forEach(([key, message]) => {
+        setError(key as keyof EmployeeLeave, {
+          type: "manual",
+          message: message as string,
+        });
+      });
+      return;
+    }
     const userId = localStorage.getItem("UserId");
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {
-      if (value !== null || value !== undefined) {
+      if (value !== null && value !== undefined) {
         if (key === "leaveId") {
           formData.append(key, data.leaveId ? String(data.leaveId) : "0");
         } else if (key === "empId") {
@@ -71,6 +84,7 @@ export const LeaveForm = () => {
     });
     SubmitLeave(formData);
   };
+
   return (
     <>
       <BreadCrumbsComponent />
@@ -87,47 +101,48 @@ export const LeaveForm = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-x-8">
           <input name="leaveId" type="hidden" value={watch("leaveId") || 0} />
           <input name="empId" type="hidden" value={watch("empId") || 0} />
-          <CustomInput
-            label="Leave For"
+
+          <FormField
+            type="text"
             name="leaveFor"
-            value={watch("leaveFor") || ""}
-            onChange={(e) => setValue("leaveFor", e.target.value)}
-            error={errors.leaveFor?.message?.toString()}
-            required
-          />
-          <CustomInput
-            label="Start Date"
-            name="startDate"
-            type="date"
-            value={watch("startDate") || ""}
-            onChange={(e) => setValue("startDate", e.target.value)}
-            error={errors.startDate?.message?.toString()}
-            required
-          />
-          <CustomInput
-            label="End Date"
-            name="endDate"
-            type="date"
-            value={watch("endDate") || ""}
-            onChange={(e) => setValue("endDate", e.target.value)}
-            error={errors.endDate?.message?.toString()}
-            required
+            label="Leave For"
+            placeholder="Enter leave for"
+            register={register}
+            registerOptions={{ required: "Leave For is required" }}
+            error={errors.leaveFor}
           />
 
-          <CustomInput
-            label="Leave Type"
-            name="leaveType"
+          <FormField
+            type="date"
+            name="startDate"
+            label="Start Date"
+            register={register}
+            registerOptions={{ required: "Start Date is required" }}
+            error={errors.startDate}
+          />
+
+          <FormField
+            type="date"
+            name="endDate"
+            label="End Date"
+            register={register}
+            registerOptions={{ required: "End Date is required" }}
+            error={errors.endDate}
+          />
+
+          <FormField
             type="select"
-            value={String(watch("leaveType") ?? "")}
-            onChange={(e) => setValue("leaveType", Number(e.target.value))}
+            name="leaveType"
+            label="Leave Type"
+            register={register}
+            registerOptions={{ required: "Leave Type is required" }}
             options={Object.values(LeaveType)
               .filter((value) => typeof value === "number")
               .map((value) => ({
                 label: LeaveTypeLabels[value as LeaveType],
                 value: String(value),
               }))}
-            error={errors.leaveType?.message?.toString()}
-            required
+            error={errors.leaveType}
           />
         </div>
         <Button

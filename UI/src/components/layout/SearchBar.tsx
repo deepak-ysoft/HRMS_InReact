@@ -1,58 +1,94 @@
 import React, { useState } from "react";
-import CustomInput from "../FormFieldComponent/InputComponent";
+import { useForm } from "react-hook-form";
+import { FormField } from "../FormFieldComponent/FormFieldComponent";
 
 interface SearchBarProps {
   iconClass?: string;
   className?: string;
-  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange?: (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => void;
 }
+
+type SearchFormValues = {
+  searchQuery: string;
+};
 
 const SearchBar: React.FC<SearchBarProps> = ({
   iconClass,
   className,
   onChange,
 }) => {
-  const [searchQuery, setSearchQuery] = useState<string>("");
   const [showInput, setShowInput] = useState(false);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
+  const { setValue, watch, register, trigger } = useForm<SearchFormValues>({
+    defaultValues: { searchQuery: "" },
+  });
+
+  const searchQuery = watch("searchQuery");
+
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    setValue("searchQuery", e.target.value);
+    trigger("searchQuery");
 
     if (onChange) {
       setTimeout(() => {
-        onChange(e);
-      }, 1000);
+        onChange(e); // Pass the event to the onChange prop
+      }, 500);
     }
   };
 
-  // Only hide input when toggleSearch is clicked and input is already visible
   const handleToggleSearch = () => {
-    if (showInput && searchQuery) return; // Don't hide if there is a search query
-    setShowInput(!showInput);
+    setShowInput((prev) => !prev); // Toggle the input visibility
+  };
+
+  const handleClear = () => {
+    setValue("searchQuery", "");
+    if (onChange) {
+      onChange({ target: { value: "" } } as React.ChangeEvent<
+        HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+      >);
+    }
   };
 
   return (
-    <div className="z-10 relative flex items-center">
+    <div className="relative flex items-center">
       {/* Search Input */}
-      <div className="ml-9">
-        <CustomInput
-          label=""
-          type="search"
-          name="searchQuery"
-          value={searchQuery}
+      <div className="relative mt-4 mr-12">
+        <FormField
           onChange={handleInputChange}
+          type="text"
+          name="searchQuery"
           placeholder="Search..."
-          required={false}
-          className={`${className}${
+          className={`transition-all duration-300 ${
             showInput
-              ? " w-60 opacity-100"
-              : " w-0 opacity-0 pointer-events-none"
-          }`}
+              ? "w-60 opacity-100 pr-1"
+              : "w-0 opacity-0 pointer-events-none"
+          } ${className}`}
+          register={register}
         />
+        {/* Clear Button (❌) */}
+        {showInput && searchQuery && (
+          <button
+            type="button"
+            onClick={handleClear}
+            className="absolute right-2 top-4 text-2xl z-10 -translate-y-1/2 text-gray-500 hover:text-black focus:outline-none"
+            title="Clear"
+          >
+            &times; {/* Cross symbol */}
+          </button>
+        )}
       </div>
 
+      {/* Search Icon */}
       <button
-        className={`${iconClass} btn btn-ghost btn-circle absolute bg-[rgb(202,194,255)] text-black `}
+        className={`${iconClass} btn btn-ghost btn-circle absolute bg-[rgb(202,194,255)] text-black`}
         onClick={handleToggleSearch}
       >
         <svg
