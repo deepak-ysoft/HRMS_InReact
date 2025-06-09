@@ -1,14 +1,13 @@
-import {
-  ListTable,
-} from "../../../components/ListComponent/ListComponent";
-import { InterviewsProps } from "../../../types/IMultitableProps";
+import { ListTable } from "../../components/ListComponent/ListComponent";
+import { CalendarProps } from "../../types/IMultitableProps";
 
-export const Interviews = ({
+export const EventsComponent = ({
   isPending,
   data,
   columns,
   pageName,
-}: InterviewsProps) => {
+}: CalendarProps) => {
+  console.log(data);
   return (
     <>
       <div className="bg-base-100 min-h-[780px] p-3 rounded-lg shadow-md">
@@ -17,7 +16,7 @@ export const Interviews = ({
             <h1 className="text-2xl font-bold">{pageName}</h1>
           </div>
         </div>
-        <div className="max-h-[550px] overflow-y-auto">
+        <div className="max-h-[690px] overflow-y-auto">
           {" "}
           {isPending ? (
             <div>Loading...</div>

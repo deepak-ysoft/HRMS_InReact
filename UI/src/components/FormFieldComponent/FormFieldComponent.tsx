@@ -45,8 +45,7 @@ type TextProps<
     | "password"
     | "number"
     | "date"
-    | "datetime-local"
-    | "checkbox";
+    | "datetime-local";
   placeholder?: string;
   rows?: number;
   register: UseFormRegister<TValues>;
@@ -115,7 +114,6 @@ export const FormField = <
         "number",
         "date",
         "datetime-local",
-        "checkbox",
       ].includes(props.type) &&
         "register" in props && (
           <input

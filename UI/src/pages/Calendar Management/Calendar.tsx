@@ -2,7 +2,9 @@
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
-import interactionPlugin from "@fullcalendar/interaction"; // for drag, drop, click
+import interactionPlugin from "@fullcalendar/interaction";
+import rrulePlugin from "@fullcalendar/rrule"; // ✅ Import rrule plugin
+
 import { BreadCrumbsComponent } from "../../components/Breadcrumbs/BreadCrumbsComponents";
 import { useQuery } from "@tanstack/react-query";
 import { GetCalendarQuery } from "../../services/Calendar/GetCalendarEvents.query";
@@ -23,6 +25,7 @@ const Calendar = () => {
     queryKey: ["getCalendar"],
     queryFn: GetCalendarQuery,
   });
+
   const [selectedEvent, setSelectedEvent] = useState<ICalendar | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
@@ -43,21 +46,17 @@ const Calendar = () => {
 
   const handleSave = async (formData: FormData) => {
     const calId = formData.get("calId");
-    if (isEdit && calId && parseInt(calId.toString()) !== 0) {
-      const result = await UpdateCalendarEventQuery(formData);
-      if (result.isSuccess) {
-        toast.success(result.message);
-      } else {
-        toast.warning(result.message);
-      }
+    const result =
+      isEdit && calId && parseInt(calId.toString()) !== 0
+        ? await UpdateCalendarEventQuery(formData)
+        : await CreateCalendarEventQuery(formData);
+
+    if (result.isSuccess) {
+      toast.success(result.message);
     } else {
-      const result = await CreateCalendarEventQuery(formData);
-      if (result.isSuccess) {
-        toast.success(result.message);
-      } else {
-        toast.warning(result.message);
-      }
+      toast.warning(result.message);
     }
+
     setShowModal(false);
     setSelectedEvent(null);
     refetch();
@@ -73,18 +72,17 @@ const Calendar = () => {
 
   const handleDeleteConfirm = async () => {
     if (!deleteId) return;
-    const data = await DeleteCalendarEventQuery(deleteId);
-    refetch();
+    const result = await DeleteCalendarEventQuery(deleteId);
     setShowDelete(false);
     setDeleteId(null);
     setShowModal(false);
     setSelectedEvent(null);
-    // Show custom toast from toast.ts
-    if (data.isSuccess) {
-      toast.success(data.message);
+    if (result.isSuccess) {
+      toast.success(result.message);
     } else {
-      toast.warning(data.message);
+      toast.warning(result.message);
     }
+    refetch();
   };
 
   const handleDeleteCancel = () => {
@@ -96,7 +94,7 @@ const Calendar = () => {
 
   return (
     <div className="p-4">
-      <div className="flex justify-between   mb-4">
+      <div className="flex justify-between mb-4">
         <BreadCrumbsComponent />
         <Button
           type="button"
@@ -105,10 +103,16 @@ const Calendar = () => {
           text="Add Event"
         />
       </div>
+
       <div className="bg-base-100 max-h-[740px] overflow-auto shadow-md rounded-lg p-6">
         {!isPending && (
           <FullCalendar
-            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+            plugins={[
+              dayGridPlugin,
+              timeGridPlugin,
+              interactionPlugin,
+              rrulePlugin,
+            ]} // ✅ Corrected here
             initialView="dayGridMonth"
             headerToolbar={{
               left: "prev,next today",
@@ -116,23 +120,51 @@ const Calendar = () => {
               right: "dayGridMonth,timeGridWeek,timeGridDay",
             }}
             eventDrop={handleEventDrop}
-            events={(data?.data ?? []).map((item) => ({
-              id: item?.calId?.toString() ?? "",
-              title: item?.title.toString(),
-              start: item?.start,
-              end: item?.end,
-              description: item?.description,
-              backgroundColor: "rgb(202,194,255)",
-              borderColor: "rgb(202,194,255)", // green-500
-              textColor: "#000000",
-            }))}
+            events={(data?.data ?? []).map((item) => {
+              const isBirthday = item.title.toLowerCase() === "birthday";
+
+              const fixedStart =
+                item.start.replace(" ", "T").split(".")[0] + "Z";
+
+              const startDate = new Date(fixedStart);
+              const month = startDate.getMonth() + 1;
+              const day = startDate.getDate();
+
+              if (isBirthday) {
+                return {
+                  id: item.calId?.toString() ?? "",
+                  title: item.title,
+                  rrule: {
+                    freq: "yearly",
+                    dtstart: fixedStart,
+                    bymonth: month,
+                    bymonthday: day,
+                  },
+                  backgroundColor: "rgb(202,194,255)",
+                  borderColor: "rgb(202,194,255)",
+                  textColor: "#000000",
+                };
+              }
+
+              return {
+                id: item.calId?.toString() ?? "",
+                title: item.title,
+                start: fixedStart,
+                end: item.end
+                  ? item.end.replace(" ", "T").split(".")[0] + "Z"
+                  : undefined,
+                backgroundColor: "rgb(202,194,255)",
+                borderColor: "rgb(202,194,255)",
+                textColor: "#000000",
+              };
+            })}
             editable={true}
             selectable={true}
-            dateClick={handleAddEvent}
             eventClick={handleEventClick}
           />
         )}
       </div>
+
       <EventModel
         open={showModal}
         onClose={() => setShowModal(false)}
@@ -141,6 +173,7 @@ const Calendar = () => {
         onDelete={handleDeleteClick}
         isEdit={isEdit}
       />
+
       {showDelete && (
         <div className="fixed inset-0 flex items-center justify-center z-50 animate-slide-in-fade-out">
           <ConfirmDelete

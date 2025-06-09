@@ -1,27 +1,72 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import ThemeToggle from "./ThemeToggle";
-import SearchBar from "./SearchBar";
+import UserDropdown from "./UserDropdown"; // Adjust path if needed
+import { useNavigate } from "react-router-dom";
+import { EmployeeDetailsQuery } from "../../services/Employee Management/Employee/EmployeeDetailsQuery";
+import { useQuery } from "@tanstack/react-query";
 
 interface HeaderProps {
   appName?: string;
 }
 
 const Header: React.FC<HeaderProps> = ({ appName = "MyApp" }) => {
-  return (
-    <div className="navbar bg-base-100 ">
-      {/* Left: Dropdown */}
-      <div className="navbar-start">{/* <DropdownMenu /> */}</div>
+  const user = JSON.parse(localStorage.getItem("User") || "{}");
+  const apiPath = import.meta.env.VITE_API_BASE_URL;
+  const navigation = useNavigate();
 
-      {/* Center: App Name */}
+  const { data } = useQuery({
+    queryKey: ["employeeDetails", user.empId],
+    queryFn: () => EmployeeDetailsQuery(user.empId),
+    enabled: !!user?.empId,
+  });
+
+  console.log(user);
+
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef(null);
+
+  const handleOutsideClick = (e: MouseEvent) => {
+    if (
+      dropdownRef.current &&
+      !dropdownRef.current.contains(e.target as Node)
+    ) {
+      setShowDropdown(false);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
+
+  const handleProfile = () => {
+    setShowDropdown(false);
+    navigation(`/employees/EmployeeDetails`, { state: data?.data });
+  };
+
+  const handleChangePassword = () => {
+    setShowDropdown(false);
+    navigation("/change-password");
+  };
+
+  const handleLogout = () => {
+    navigation("/login");
+    localStorage.clear();
+    setShowDropdown(false);
+  };
+
+  return (
+    <div className="navbar bg-base-100">
+      {/* Left */}
+      <div className="navbar-start"></div>
+
+      {/* Center */}
       <div className="navbar-center">
         <a className="btn btn-ghost text-xl">{appName}</a>
       </div>
 
-      {/* Right: Icons */}
-      <div className="navbar-end space-x-2">
-        {/* Search */}
-        {/* <SearchBar className="transition-all p-2 border rounded-xl duration-300 ease-in-out absolute right-12 bottom-5" /> */}
-
+      {/* Right */}
+      <div className="navbar-end space-x-2 relative" ref={dropdownRef}>
         {/* Notifications */}
         <button className="btn btn-ghost btn-circle">
           <div className="indicator">
@@ -46,6 +91,33 @@ const Header: React.FC<HeaderProps> = ({ appName = "MyApp" }) => {
 
         {/* Theme Toggle */}
         <ThemeToggle />
+
+        {/* Avatar + Dropdown */}
+        <button
+          className="btn btn-ghost btn-circle"
+          onClick={() => setShowDropdown(!showDropdown)}
+        >
+          <div className="avatar">
+            <div className="w-10 rounded-full text-white pt-[2px] bg-[rgb(159,145,251)] flex items-center justify-center">
+              {data?.data?.imagePath ? (
+                <img src={apiPath + data?.data.imagePath} alt="User Avatar" />
+              ) : (
+                <span className="text-2xl font-semibold">
+                  {data?.data?.empName?.charAt(0).toUpperCase()}
+                </span>
+              )}
+            </div>
+          </div>
+        </button>
+
+        {showDropdown && (
+          <UserDropdown
+            user={data?.data?.empName || "User"}
+            onProfile={handleProfile}
+            onChangePassword={handleChangePassword}
+            onLogout={handleLogout}
+          />
+        )}
       </div>
     </div>
   );

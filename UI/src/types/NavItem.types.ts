@@ -1,4 +1,4 @@
-import { BiGrid, BiEnvelope, BiIdCard, BiLogOut } from "react-icons/bi";
+import { BiGrid, BiEnvelope, BiIdCard } from "react-icons/bi";
 import { FaFileAlt, FaLaptop, FaUserEdit, FaUserTie } from "react-icons/fa";
 import { GoPerson } from "react-icons/go";
 import { MdOutlinePersonPin } from "react-icons/md";
@@ -57,11 +57,6 @@ const SidebarItems = [
     icon: BiEnvelope,
   },
 
-  {
-    title: "Logout",
-    path: "login",
-    icon: BiLogOut,
-  },
 ];
 
 export default SidebarItems;

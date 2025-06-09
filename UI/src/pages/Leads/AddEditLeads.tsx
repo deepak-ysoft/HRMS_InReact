@@ -8,7 +8,6 @@ import { AddEditLeadsQuery } from "../../services/Leads/AddEditLeads.query";
 import { BreadCrumbsComponent } from "../../components/Breadcrumbs/BreadCrumbsComponents";
 import { FormField } from "../../components/FormFieldComponent/FormFieldComponent";
 import { Button } from "../../components/ButtonComponent/ButtonComponent";
-import { validateLeadsForm } from "../../formValidation/validateLeadsForm";
 
 const defaultValues: Partial<ILeads> = {
   leadsId: 0,
@@ -28,7 +27,6 @@ export const LeadForm = () => {
     handleSubmit,
     setValue,
     reset,
-    setError,
     formState: { errors, isSubmitting },
     watch,
     register,
@@ -50,22 +48,11 @@ export const LeadForm = () => {
       reset(defaultValues);
       navigate("/Leads");
     },
-    onError: (err) => {
-      console.log(err);
+    onError: () => {
     },
   });
 
   const onSubmit = (data: ILeads) => {
-    const validationErrors = validateLeadsForm(data);
-    if (Object.keys(validationErrors).length > 0) {
-      Object.entries(validationErrors).forEach(([key, message]) => {
-        setError(key as string, {
-          type: "manual",
-          message: message as string,
-        });
-      });
-      return;
-    }
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {
       if (value !== null && value !== undefined) {

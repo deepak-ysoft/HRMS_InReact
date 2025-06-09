@@ -87,7 +87,7 @@ namespace CandidateDetails_API.ServiceContent
             var user = await _context.Employees.FirstOrDefaultAsync(x => x.empEmail == email && !x.IsDeleted); // Find the user by email
             return user;
         }
-        public async Task<Employee> GetUserByResetTokenAsync(string token)
+        public async Task<Employee?> GetUserByResetTokenAsync(string token)
         {
             // Fetch the user based on the reset token and check if the token is still valid
             return await _context.Employees.FirstOrDefaultAsync(u => u.ResetToken == token && u.ResetTokenExpiration > DateTime.Now);

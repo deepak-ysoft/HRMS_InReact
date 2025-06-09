@@ -88,22 +88,36 @@ namespace CandidateDetails_API.ServiceContent
 
         public async Task<ApiResponse<dynamic>> GetEventListAsync()
         {
-            Regex trimmer = new Regex(@"\s\s+");
             // Retrieve the calendar from the database
-            var data = await _context.calendar.ToListAsync();
+            var data = await _context.calendar.Select(x => new
+            {
+                x.CalId,
+                Title = x.Title.ToString(), // Convert enum to string
+                x.Description,
+                x.Start,
+                x.End,
+                // Include other properties if needed
+            }).ToListAsync();
 
-            var birthday = data.Where(x => x.Title == CalendarTitle.Birthday).OrderByDescending(x => x.Start).ToList();
-            
+
+            var birthday = data.Where(x => x.Title == "Birthday").OrderByDescending(x => x.Start).ToList();
+            var holiday = data.Where(x => x.Title == "Holiday").OrderByDescending(x => x.Start).ToList();
+            var events = data.Where(x => x.Title == "Event").OrderByDescending(x => x.Start).ToList();
+            var meeting = data.Where(x => x.Title == "Meeting").OrderByDescending(x => x.Start).ToList();
+            var leave = data.Where(x => x.Title == "Leave").OrderByDescending(x => x.Start).ToList();
 
             // Return the calendar as JSON
             return new ApiResponse<dynamic>
             {
                 IsSuccess = true,
                 Message = "Calendar retrieved successfully.",
-                Data =
+                Data = new
                 {
-                    hd = hday,
-                    bd = bday
+                    Birthday= birthday,
+                    Holiday = holiday,
+                    Events = events,
+                    Meeting = meeting,
+                    Leave = leave
                 }
             };
         }
@@ -161,7 +175,7 @@ namespace CandidateDetails_API.ServiceContent
                 calendar.Start = request.Start;
                 calendar.End = request.End;
                 calendar.UpdatedBy = _currentUserId;
-                calendar.UpdatedAt = DateTime.Now; 
+                calendar.UpdatedAt = DateTime.Now;
 
                 await _context.SaveChangesAsync();
                 return new ApiResponse<string>

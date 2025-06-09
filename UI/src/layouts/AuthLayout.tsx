@@ -73,7 +73,7 @@ const AuthLayout: React.FC = () => {
 
       {/* Footer */}
       <footer className="p-4 text-center bg-base-200 text-base-content">
-        &copy; 2025 AuthApp. All rights reserved.
+        &copy; 2024 YSoft. All rights reserved.
       </footer>
     </div>
   );

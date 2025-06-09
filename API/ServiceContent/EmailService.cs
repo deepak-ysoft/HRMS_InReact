@@ -21,27 +21,29 @@ namespace CandidateDetails_API.ServiceContent
                 using (var smtpClient = new SmtpClient(_smtpSettings.Host, _smtpSettings.Port))
                 {
                     smtpClient.Credentials = new NetworkCredential(_smtpSettings.Username, _smtpSettings.Password);
-                    smtpClient.EnableSsl = false; // Ensure this is correct based on your SMTP server requirements
+                    smtpClient.EnableSsl = true; // ✅ Required for Gmail
                     smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
+                    smtpClient.UseDefaultCredentials = false; // ✅ Avoid using system credentials
 
                     var mailMessage = new MailMessage
                     {
-                        From = new MailAddress(_smtpSettings.FromEmail),
+                        From = new MailAddress(_smtpSettings.FromEmail, _smtpSettings.Username),
                         Subject = subject,
                         Body = body,
                         IsBodyHtml = true
                     };
+
                     mailMessage.To.Add(toEmail);
 
                     await smtpClient.SendMailAsync(mailMessage);
-                    return true; // Email sent successfully
+                    return true;
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                Console.WriteLine($"SendEmailAsync Error: {ex.Message}");
+                return false;
             }
         }
-
     }
 }

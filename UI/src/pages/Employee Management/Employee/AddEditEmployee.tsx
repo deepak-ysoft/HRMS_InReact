@@ -11,7 +11,6 @@ import { UserRoles } from "../../../types/Enum/UserRoles";
 import { EditEmployeeasync } from "../../../services/Employee Management/Employee/EditEmployee.query";
 import { Gender } from "../../../types/Enum/Gender";
 import { toast } from "react-toastify";
-import { validateEmployeeForm } from "../../../formValidation/validateEmployeeForm";
 
 const defaultValues: Partial<Employee> = {
   empId: 0,
@@ -44,7 +43,6 @@ export const EmployeeForm = () => {
     handleSubmit,
     setValue,
     reset,
-    setError,
     formState: { errors, isSubmitting },
     watch,
     register,
@@ -80,16 +78,6 @@ export const EmployeeForm = () => {
   });
 
   const onSubmit = (data: Employee) => {
-    const validationErrors = validateEmployeeForm(data);
-    if (Object.keys(validationErrors).length > 0) {
-      Object.entries(validationErrors).forEach(([key, message]) => {
-        setError(key as keyof Employee, {
-          type: "manual",
-          message: message as string,
-        });
-      });
-      return;
-    }
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {
       if (value !== null && value !== undefined) {
@@ -184,6 +172,7 @@ export const EmployeeForm = () => {
           <FormField
             type="select"
             name="empGender"
+            isRequired={true}
             label="Gender"
             register={register}
             registerOptions={{ required: "Gender is required" }}

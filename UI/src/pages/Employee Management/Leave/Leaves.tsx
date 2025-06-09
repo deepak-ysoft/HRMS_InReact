@@ -52,8 +52,6 @@ export const LeavePage: React.FC = () => {
     queryFn: () => GetLeave(Number(userId), page),
   });
 
-  console.log(data);
-
   const columns: Column<
     Record<string, string | number | File | null | undefined>
   >[] = [

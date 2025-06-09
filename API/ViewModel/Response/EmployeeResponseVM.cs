@@ -10,6 +10,7 @@ namespace HRMS.ViewModel.Response
         public string empName { get; set; }
         public string empEmail { get; set; }
         public string empNumber { get; set; }
+        public string empPassword { get; set; }
         public DateTime empDateOfBirth { get; set; }
         public string empGender { get; set; }
         public string empJobTitle { get; set; }

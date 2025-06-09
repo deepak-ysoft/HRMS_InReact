@@ -4,7 +4,6 @@ interface toastTypes {
 }
 
 export const ToastMessage: React.FC<toastTypes> = ({ toastMsg, ToastFor }) => {
-  console.log(ToastFor, toastMsg);
   return (
     <>
       <div

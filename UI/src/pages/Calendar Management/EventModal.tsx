@@ -12,6 +12,8 @@ interface EventModelProps {
   onSave: (event: FormData) => void;
   onDelete: (id: number) => void;
   isEdit?: boolean;
+  disabled?: boolean;
+  isFromEvent?: boolean;
 }
 
 const defaultValues: Partial<ICalendar> = {
@@ -29,6 +31,8 @@ export const EventModel: React.FC<EventModelProps> = ({
   onSave,
   onDelete,
   isEdit = false,
+  disabled = false,
+  isFromEvent = false,
 }) => {
   const {
     register,
@@ -40,8 +44,9 @@ export const EventModel: React.FC<EventModelProps> = ({
 
   useEffect(() => {
     if (eventData) {
+      console.log(eventData.title);
       Object.entries(eventData).forEach(([key, value]) => {
-        setValue(key as keyof ICalendar, value as never);
+        setValue(key as string, value as never);
       });
     } else {
       reset(defaultValues);
@@ -49,7 +54,6 @@ export const EventModel: React.FC<EventModelProps> = ({
   }, [eventData, setValue, reset]);
 
   const handleFormSubmit = (data: ICalendar) => {
-    console.log(errors.description?.message);
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {
       formData.append(key, value);
@@ -64,7 +68,11 @@ export const EventModel: React.FC<EventModelProps> = ({
     <div className="fixed top-0 left-0 right-0 bg-opacity-40 flex justify-center z-50">
       <div className="bg-base-100 rounded-lg shadow-lg border p-6 min-w-[500px]">
         <h2 className="text-xl font-semibold mb-4">
-          {isEdit ? "Event Details" : "Add Event"}
+          {isEdit
+            ? "Edit Event"
+            : !isEdit && !isFromEvent
+            ? "Add Event"
+            : "Event Details"}
         </h2>
         <form
           onSubmit={handleSubmit(handleFormSubmit)}
@@ -72,38 +80,43 @@ export const EventModel: React.FC<EventModelProps> = ({
         >
           <input type="hidden" {...register("calId")} />
           <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
-            <FormField
-              type="select"
-              name="title"
-              label="Event Title"
-              register={register}
-              registerOptions={{ required: "Event title is required" }}
-              error={errors.title}
-              options={Object.values(CalendarEventType)
-                .filter((v) => typeof v === "number")
-                .map((value) => ({
-                  value,
-                  label: CalendarEventType[value as number],
-                }))}
-            />
+            {!isFromEvent && (
+              <FormField
+                type="select"
+                name="title"
+                label="Event Title"
+                register={register}
+                registerOptions={{ required: "Event title is required" }}
+                error={errors.title}
+                options={Object.values(CalendarEventType)
+                  .filter((v) => typeof v === "number")
+                  .map((value) => ({
+                    value,
+                    label: CalendarEventType[value as number],
+                  }))}
+                disabled={disabled}
+              />
+            )}
 
             <FormField
-              type="text"
+              type="datetime-local"
               name="start"
               label="Start Date"
               placeholder="Enter start date"
               register={register}
               registerOptions={{ required: "Start date is required" }}
               error={errors.start}
+              disabled={disabled}
             />
             <FormField
-              type="text"
+              type="datetime-local"
               name="end"
               label="End Date"
               placeholder="Enter end date"
               register={register}
               registerOptions={{ required: "End date is required" }}
               error={errors.end}
+              disabled={disabled}
             />
             <FormField
               type="textarea"
@@ -119,11 +132,12 @@ export const EventModel: React.FC<EventModelProps> = ({
                 },
               }}
               error={errors.description}
+              disabled={disabled}
             />
           </div>
 
           <div className="flex gap-2 mt-6 justify-end">
-            {isEdit && eventData && (
+            {isEdit && eventData && eventData?.title != "0" && !isFromEvent && (
               <Button
                 type="button"
                 text="Delete"
@@ -131,11 +145,14 @@ export const EventModel: React.FC<EventModelProps> = ({
                 onClick={() => onDelete(eventData?.calId ?? 0)}
               />
             )}
-            <Button
-              type="submit"
-              text={isEdit ? "Update" : "Add"}
-              className="bg-[rgb(66,42,213)] text-white"
-            />
+            {eventData?.title != "0" && (
+              <Button
+                type="submit"
+                text={isEdit ? "Update" : "Add"}
+                className="bg-[rgb(66,42,213)] text-white"
+              />
+            )}
+
             <Button
               type="button"
               text="Cancel"

@@ -1,7 +1,7 @@
 import { Route, Routes, Navigate } from "react-router-dom";
 import MainLayout from "../layouts/MainLayout";
 import AddCandidate from "../pages/Candidate Management/candidate/AddCandidate";
-import LoginForm from "../pages/sign/LoginForm";
+import LoginForm from "../pages/Auth/LoginForm";
 import AuthLayout from "../layouts/AuthLayout";
 import CandidateListPage from "../pages/Candidate Management/candidate/CandidateList";
 import { Dashboard } from "../pages/Dashboard/Dashboard";
@@ -16,6 +16,10 @@ import { InterviewPage } from "../pages/Candidate Management/Candidate Interview
 import { GetLeads } from "../pages/Leads/GetLeads";
 import { LeadForm } from "../pages/Leads/AddEditLeads";
 import Calendar from "../pages/Calendar Management/Calendar";
+import { EventsPage } from "../pages/Calendar Management/EventsPage";
+import { ChangePassword } from "../pages/Auth/ChangePassword";
+import { ForgotPassword } from "../pages/Auth/forgotPassword";
+import { ResetPassword } from "../pages/Auth/ResetPassword";
 
 const AppRouter = () => {
   return (
@@ -26,6 +30,8 @@ const AppRouter = () => {
       {/* AuthLayout is used for authentication routes */}
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<LoginForm />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
       </Route>
 
       {/* MainLayout is used for main routes after login */}
@@ -55,6 +61,8 @@ const AppRouter = () => {
         <Route path="/Leads" element={<GetLeads />} />
         <Route path="/Leads/AddEditLeads" element={<LeadForm />} />
         <Route path="/Calendar" element={<Calendar />} />
+        <Route path="/Events" element={<EventsPage />} />
+        <Route path="/change-password" element={<ChangePassword />} />
       </Route>
       {/* Redirect all other paths to login */}
       <Route path="/*" element={<Navigate to="/login" replace />} />

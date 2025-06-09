@@ -1,8 +1,10 @@
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Employee } from "../../../types/IEmployee.type";
 import { BreadCrumbsComponent } from "../../../components/Breadcrumbs/BreadCrumbsComponents";
+import { Button } from "../../../components/ButtonComponent/ButtonComponent";
 
 export const EmployeeDetails: React.FC = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   const employee: Employee = location.state as Employee;
   const apiPath = import.meta.env.VITE_API_BASE_URL;
@@ -20,7 +22,13 @@ export const EmployeeDetails: React.FC = () => {
             />
             <div className="font-bold text-lg mb-1">{employee.empName}</div>
             <div className="text-base-400 mb-1">{employee.empEmail}</div>
-            <div className="text-base-400 mb-1">{employee.role || "-"}</div>
+            <div className="text-base-400 mb-1">
+              {employee.role == 1
+                ? "Admin"
+                : employee.role == 2
+                ? "HR"
+                : "Employee"}
+            </div>
           </div>
         </div>
         <div className="col-span-2 bg-base-100 p-5 rounded-lg shadow-md w-full lg:w-2/3 flex flex-col gap-2">
@@ -50,7 +58,7 @@ export const EmployeeDetails: React.FC = () => {
                 Gender
               </label>
               <div className="border rounded px-3 py-2 bg-base-200 ">
-                {employee.empGender}
+                {employee.empGender == 0 ? "Male" : employee.empGender == 1 ? "Female" : "Other"}
               </div>
             </div>
           </div>
@@ -104,8 +112,18 @@ export const EmployeeDetails: React.FC = () => {
               </div>
             </div>
           </div>
+          <div className="flex justify-end mr-[100px]">
+            <Button
+              type="button"
+              onClick={() =>
+                navigate(`/employees/AddEmployee`, { state: employee })
+              }
+              className="bg-blue-500 w-1/4 text-white mt-4 py-2 px-4 rounded"
+              text="Edit Employee"
+            />
+          </div>
         </div>
-      </div>
+      </div>{" "}
     </>
   );
 };

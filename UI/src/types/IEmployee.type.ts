@@ -1,6 +1,3 @@
-import { Gender } from "./Enum/Gender";
-import { UserRoles } from "./Enum/UserRoles";
-
 export interface Employee {
   empId: number;
   empName: string;
@@ -9,7 +6,7 @@ export interface Employee {
   empPasswordConfirm?: string; // Not mapped to DB, used only in frontend
   empNumber: string;
   empDateOfBirth: string; // ISO 8601 date string
-  empGender: Gender;
+  empGender: undefined;
   empJobTitle: string;
   empExperience: string;
   empDateofJoining: string; // ISO 8601 date string
@@ -17,7 +14,7 @@ export interface Employee {
   imagePath?: string;
   photo?: File | null; // For file upload
   isDelete?: boolean;
-  role: UserRoles;
+  role: undefined;
   isActive?: boolean;
   resetToken?: string;
   resetTokenExpiration?: string; // ISO string

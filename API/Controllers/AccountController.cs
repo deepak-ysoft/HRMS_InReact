@@ -1,4 +1,5 @@
-﻿using CandidateDetails_API.IServices;
+﻿using Azure.Core;
+using CandidateDetails_API.IServices;
 using CandidateDetails_API.Model;
 using CandidateDetails_API.ServiceContent;
 using HRMS.ViewModel.Request;
@@ -45,12 +46,18 @@ namespace CandidateDetails_API.Controllers
                 var result = await _service.Login(model); // Assuming Login is now async
                 if (result.IsSuccess)
                 {
-                   
+
                     var token = _authService.GenerateJwtToken(result.Data, result.Data.Role.ToString()); // GenerateJwtToken returns a token
+                    var data = new
+                    {
+                        empId = result.Data.empId,
+                        role = result.Data.Role
+                    };
+
                     return Ok(new
                     {
                         IsSuccess = true,
-                        Data = result.Data,
+                        Data = data,
                         Message = "Login Succassfully.",
                         token = token
                     }); // Login returns a result with Success property
@@ -71,7 +78,7 @@ namespace CandidateDetails_API.Controllers
         /// <returns></returns>
         [Authorize]
         [HttpPost("ChangePassword")]
-        public async Task<IActionResult> ChangePassword([FromBody] ChangePassword model)
+        public async Task<IActionResult> ChangePassword([FromForm] ChangePassword model)
         {
             try
             {
@@ -79,6 +86,7 @@ namespace CandidateDetails_API.Controllers
                     return BadRequest(ModelState);
 
                 var result = await _service.ChangePasswordAsync(model); // Assuming ChangePassword is now async
+
                 return Ok(result); // Assuming ChangePassword returns a result with IsSuccess property
             }
             catch (Exception)
@@ -93,33 +101,86 @@ namespace CandidateDetails_API.Controllers
         /// <param name="request"> mail id</param>
         /// <returns></returns>
         [AllowAnonymous]
-        [HttpPost("ForgotPassword")]
-        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPassRequest request)
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromForm] ForgotPassRequest request)
         {
             var user = await _employeeservice.GetUserByEmailAsync(request.email);
             if (user == null)
-                return BadRequest(new ApiResponse<string> { IsSuccess = false, Message = "Email not found" });
+            {
+                return BadRequest(new ApiResponse<string>
+                {
+                    IsSuccess = false,
+                    Message = "Email not found."
+                });
+            }
 
-            // Generate reset token (GUID or JWT)
+            // Generate a secure reset token and expiry
             var resetToken = Guid.NewGuid().ToString();
-
-            // Set the token expiration time (1 hour)
             user.ResetToken = resetToken;
-            user.ResetTokenExpiration = DateTime.Now.AddHours(1); // Token expires in 1 hour
-
-            // Save the reset token and expiration time in the database
+            user.ResetTokenExpiration = DateTime.Now.AddHours(1);
             await _employeeservice.UpdateUserAsync(user);
-            
-            // Create the reset link with the token
-            //var resetLink = $"http://localhost:4200/reset-password?token={resetToken}";
-            var resetLink = $"{request.frontendUrl}/reset-password?token={resetToken}";
 
+            // Construct the password reset link
+            var resetLink = $"{request.frontendUrl}reset-password?token={resetToken}";
 
-            // Send the reset link via email
-            var isSend = await _emailservice.SendEmailAsync(request.email, "Reset your password", $"Click <a href='{resetLink}'>here</a> to reset your password.");
+            // Prepare the email body
+            var emailBody = $@"
+            <div style='font-family:Segoe UI, Roboto, Helvetica, Arial, sans-serif; max-width:600px; margin:auto; padding:25px; background:#fdfdfd; border-radius:10px; border:1px solid #e0e0e0;'>
+                <div style='text-align:center;'>
+                    <h2 style='color:#007BFF;'>🔐 Reset Your Password</h2>
+                </div>
+    
+                <p style='font-size:16px; color:#333;'>Hi <strong>{user.empName}</strong>,</p>
 
-            return Ok(new ApiResponse<string> { IsSuccess = true, Message = "Password reset email sent" });
+                <p style='font-size:15px; color:#555;'>
+                    We received a request to reset your account password. Click the button below to set a new password.
+                </p>
+
+                <div style='text-align:center; margin:30px 0;'>
+                    <a href='{resetLink}' style='display:inline-block; padding:12px 24px; background-color:#007BFF; color:#ffffff; font-weight:500; text-decoration:none; border-radius:6px;'>
+                        🔄 Reset Password
+                    </a>
+                </div>
+
+                <p style='font-size:14px; color:#777;'>
+                    If the button above doesn't work, copy and paste the following link into your browser:
+                </p>
+
+                <p style='word-break:break-all; font-size:13px; color:#555; background:#f8f9fa; padding:10px; border-radius:5px; border:1px solid #ccc;'>
+                    {resetLink}
+                </p>
+
+                <p style='font-size:13px; color:#999; margin-top:20px;'>
+                    ⏳ This link will expire in <strong>1 hour</strong> for your account security.
+                </p>
+
+                <hr style='border:none; border-top:1px solid #e0e0e0; margin:30px 0;' />
+
+                <p style='font-size:14px; color:#666; text-align:center;'>
+                    Thank you,<br />
+                    <strong>YSoft Support Team</strong>
+                </p>
+            </div>";
+
+            // Send the email
+            var isSent = await _emailservice.SendEmailAsync(request.email, "Reset your password", emailBody);
+
+            if (isSent)
+            {
+                return Ok(new ApiResponse<string>
+                {
+                    IsSuccess = true,
+                    Message = "Password reset email sent successfully."
+                });
+            }
+
+            return StatusCode(500, new ApiResponse<string>
+            {
+                IsSuccess = false,
+                Message = "Failed to send the reset email. Please try again later."
+            });
         }
+
 
         /// <summary>
         /// ResetPassword with reset token and new password
@@ -127,26 +188,78 @@ namespace CandidateDetails_API.Controllers
         /// <param name="request"> ResetPassRequest model object</param>
         /// <returns>message</returns>
         [AllowAnonymous]
-        [HttpPost("ResetPassword")]
-        public async Task<IActionResult> ResetPassword([FromBody] ResetPassRequest request)
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromForm] ResetPassRequest request)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-            // Verify the token and check if it is valid
-            var user = await _employeeservice.GetUserByResetTokenAsync(request.Token);
-            if (user == null || !user.ResetTokenIsValid)
             {
-                return BadRequest(new ApiResponse<string> { IsSuccess = false, Message = "Invalid or expired token." });
+                return BadRequest(new ApiResponse<string>
+                {
+                    IsSuccess = false,
+                    Message = "Invalid input."
+                });
             }
 
-            // Reset the password (use proper password hashing)
-            var hasher = new PasswordHasher<ResetPassRequest>();
-            user.empPassword = hasher.HashPassword(request, request.NewPassword); // Hash the new password
+            // Retrieve user by reset token
+            var user = await _employeeservice.GetUserByResetTokenAsync(request.Token);
+            if (user == null || user.ResetTokenExpiration < DateTime.Now)
+            {
+                return BadRequest(new ApiResponse<string>
+                {
+                    IsSuccess = false,
+                    Message = "The reset token is invalid or has expired."
+                });
+            }
 
-            // Save the updated user data with the new password
+            // Hash and update the password securely
+            var hasher = new PasswordHasher<object>();
+            user.empPassword = hasher.HashPassword(null, request.NewPassword);
+
+            // Clear the reset token and expiration
+            user.ResetToken = null;
+            user.ResetTokenExpiration = null;
+
+            // Save changes
             await _employeeservice.UpdateUserAsync(user);
 
-            return Ok(new ApiResponse<string> { IsSuccess = true, Message = "Password reset successfully." });
+            // Prepare confirmation email
+            var emailBody = $@"
+            <div style='font-family:Segoe UI, Roboto, Helvetica, Arial, sans-serif; max-width:600px; margin:auto; padding:20px; background:#f9f9f9; border-radius:10px; border:1px solid #ddd;'>
+                <div style='text-align:center;'>
+                    <h2 style='color:#2c3e50;'>🔒 Password Reset Successful</h2>
+                </div>
+                <p style='font-size:16px; color:#333;'>Hi <strong>{user.empName}</strong>,</p>
+
+                <p style='font-size:15px; color:#555;'>
+                    Your password has been <strong>successfully reset</strong>. You can now log in using your new credentials.
+                </p>
+
+                <div style='padding:15px; background-color:#eaf7ea; border-left:5px solid #28a745; margin:20px 0;'>
+                    <p style='margin:0; font-size:15px; color:#2e7d32;'>
+                        ✅ <strong>New Password:</strong> <span style='font-weight:bold;'>{request.NewPassword}</span>
+                    </p>
+                </div>
+
+                <p style='font-size:14px; color:#777;'>
+                    If you did not request this change, please <a href='mailto:support@example.com' style='color:#d9534f;'>contact our support team</a> immediately.
+                </p>
+
+                <hr style='border:none; border-top:1px solid #ccc; margin:30px 0;' />
+
+                <p style='font-size:14px; color:#999; text-align:center;'>
+                    Thank you,<br />
+                    <strong>YSoft Support Team</strong>
+                </p>
+            </div>";
+
+            // Send confirmation email
+            await _emailservice.SendEmailAsync(user.empEmail, "Password Reset Confirmation", emailBody);
+
+            return Ok(new ApiResponse<string>
+            {
+                IsSuccess = true,
+                Message = "Your password has been reset successfully. A confirmation email has been sent."
+            });
         }
     }
 }

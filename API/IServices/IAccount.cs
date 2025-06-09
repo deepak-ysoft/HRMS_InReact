@@ -6,7 +6,7 @@ namespace CandidateDetails_API.IServices
 {
     public interface IAccount
     {
-        public Task<ApiResponse<Employee>> Login(Login model);
+        public Task<ApiResponse<EmployeeResponseVM>> Login(Login model);
         public Task<ApiResponse<string>> ChangePasswordAsync(ChangePassword changePasswordVM); // Change password   
     }
 }

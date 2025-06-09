@@ -10,7 +10,6 @@ import { LeaveType, LeaveTypeLabels } from "../../../types/Enum/LeaveType";
 import { Button } from "../../../components/ButtonComponent/ButtonComponent";
 import { LeaveApprovel } from "../../../types/Enum/LeaveApprovel";
 import { toast } from "react-toastify";
-import { validateEmployeeLeaveForm } from "../../../formValidation/validateEmployeeLeaveForm";
 
 const defaultValues: Partial<EmployeeLeave> = {
   leaveId: 0,
@@ -31,7 +30,6 @@ export const LeaveForm = () => {
     handleSubmit,
     setValue,
     reset,
-    setError,
     formState: { errors, isSubmitting },
     watch,
     register,
@@ -53,22 +51,12 @@ export const LeaveForm = () => {
       reset(defaultValues);
       navigate("/Leaves");
     },
-    onError: (err) => {
-      console.log(err);
+    onError: () => {
     },
   });
 
   const onSubmit = (data: EmployeeLeave) => {
-    const validationErrors = validateEmployeeLeaveForm(data);
-    if (Object.keys(validationErrors).length > 0) {
-      Object.entries(validationErrors).forEach(([key, message]) => {
-        setError(key as keyof EmployeeLeave, {
-          type: "manual",
-          message: message as string,
-        });
-      });
-      return;
-    }
+    
     const userId = localStorage.getItem("UserId");
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {

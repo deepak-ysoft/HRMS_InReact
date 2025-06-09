@@ -29,6 +29,7 @@ const LoginForm: React.FC = () => {
     onSuccess: (data) => {
       localStorage.setItem("token", data.token.result);
       localStorage.setItem("UserId", data.data.empId);
+      localStorage.setItem("User", JSON.stringify(data.data));
       toast.success(data.message);
       navigate("/dashboard");
     },
@@ -85,12 +86,10 @@ const LoginForm: React.FC = () => {
           }}
           error={errors.password}
         />
-        <FormField
-          type="checkbox"
-          label="Remember Me"
-          name="remember"
-          register={register}
-        />
+        <div className="flex items-center gap-2">
+          <input type="checkbox" id="remember" {...register("remember")} />
+          <label htmlFor="remember">Remember Me</label>
+        </div>
 
         <Button
           type="submit"
@@ -99,10 +98,13 @@ const LoginForm: React.FC = () => {
           text={isSubmitting ? "Logging in..." : "Login"}
         />
 
-        <p className="text-sm text-center">
-          Don&apos;t have an account?{" "}
-          <a href="/register" className="link link-primary">
-            Create an account
+        <p className="text-sm text-center mt-4">
+          Forgot your password?{" "}
+          <a
+            href="/forgot-password"
+            className="text-blue-600 hover:underline font-medium"
+          >
+            Reset it here
           </a>
         </p>
       </form>
@@ -110,12 +112,12 @@ const LoginForm: React.FC = () => {
       <div className="text-center text-xs text-gray-500">
         Designed by{" "}
         <a
-          href="https://bootstrapmade.com/"
+          href="https://www.ysoftsolution.com/"
           className="link"
           target="_blank"
           rel="noopener noreferrer"
         >
-          BootstrapMade
+          YSoft
         </a>
       </div>
     </div>

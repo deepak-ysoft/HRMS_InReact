@@ -1,5 +1,6 @@
 ﻿using CandidateDetails_API.IServices;
 using CandidateDetails_API.Model;
+using HRMS.ViewModel.Response;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -19,7 +20,7 @@ namespace CandidateDetails_API.ServiceContent
         }
 
         // Generate Jwt Token by emp id
-        public async Task<string> GenerateJwtToken(Employee emp, string role)
+        public async Task<string> GenerateJwtToken(EmployeeResponseVM emp, string role)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_jwtKey);

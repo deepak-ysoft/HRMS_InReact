@@ -6,7 +6,6 @@ import { FormField } from "../../../components/FormFieldComponent/FormFieldCompo
 import { Button } from "../../../components/ButtonComponent/ButtonComponent";
 import { EmployeeAsset } from "../../../types/IEmployeeAsset.types";
 import { toast } from "react-toastify";
-import { validateEmployeeAssetForm } from "../../../formValidation/validateEmployeeAssetForm";
 
 const defaultValues: Partial<EmployeeAsset> = {
   assetId: 0,
@@ -30,7 +29,6 @@ export const AssetsForm = ({
     handleSubmit,
     setValue,
     reset,
-    setError,
     formState: { errors, isSubmitting },
     watch,
     register,
@@ -39,7 +37,7 @@ export const AssetsForm = ({
   const apiPath = import.meta.env.VITE_API_BASE_URL;
   const [previewImage, setPreviewImage] = useState<string>(
     apiPath + (editData?.imagePath || "") ||
-      "https://img.daisyui.com/images/profile/demo/yellingcat@192.webp"
+      "https://i.pinimg.com/236x/49/93/64/4993642c65077a0e051623e94ade6b3a.jpg"
   );
   const imageInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -51,12 +49,12 @@ export const AssetsForm = ({
       setPreviewImage(
         editData.imagePath && editData.imagePath !== ""
           ? apiPath + editData.imagePath
-          : "https://img.daisyui.com/images/profile/demo/yellingcat@192.webp"
+          : "https://i.pinimg.com/236x/49/93/64/4993642c65077a0e051623e94ade6b3a.jpg"
       );
     } else {
       reset(defaultValues);
       setPreviewImage(
-        "https://img.daisyui.com/images/profile/demo/yellingcat@192.webp"
+        "https://i.pinimg.com/236x/49/93/64/4993642c65077a0e051623e94ade6b3a.jpg"
       );
     }
   }, [editData, setValue, reset, apiPath]);
@@ -86,16 +84,6 @@ export const AssetsForm = ({
   });
 
   const onSubmit = (data: EmployeeAsset) => {
-    const validationErrors = validateEmployeeAssetForm(data);
-    if (Object.keys(validationErrors).length > 0) {
-      Object.entries(validationErrors).forEach(([key, message]) => {
-        setError(key as keyof EmployeeAsset, {
-          type: "manual",
-          message: message as string,
-        });
-      });
-      return;
-    }
     const userId = localStorage.getItem("UserId");
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {
@@ -148,15 +136,6 @@ export const AssetsForm = ({
             className="hidden"
             accept="image/*"
             onChange={handleImageChange}
-          />
-
-          <FormField
-            type="file"
-            name="image"
-            label="Upload Image"
-            setValue={setValue}
-            registerOptions={{ required: !editData && "Image is required" }}
-            error={errors.image}
           />
 
           <FormField
