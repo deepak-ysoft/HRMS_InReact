@@ -44,7 +44,6 @@ export const EventModel: React.FC<EventModelProps> = ({
 
   useEffect(() => {
     if (eventData) {
-      console.log(eventData.title);
       Object.entries(eventData).forEach(([key, value]) => {
         setValue(key as string, value as never);
       });

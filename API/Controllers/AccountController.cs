@@ -261,5 +261,20 @@ namespace CandidateDetails_API.Controllers
                 Message = "Your password has been reset successfully. A confirmation email has been sent."
             });
         }
+
+        [HttpPost("verify-phone")]
+        public async Task<IActionResult> VerifyPhone([FromBody] PhoneVerifyRequest model)
+        {
+            if (string.IsNullOrWhiteSpace(model.PhoneNumber))
+                return BadRequest("Phone number is required.");
+
+            var user = await _context.Employees.FirstOrDefaultAsync(x => x.empNumber == model.PhoneNumber);
+            if (user == null)
+                return NotFound("Phone number not registered.");
+
+            // Your logic to send password reset token/email/sms here
+
+            return Ok(new { success = true, message = "Phone verified, proceed with password reset." });
+        }
     }
 }

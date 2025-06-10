@@ -105,7 +105,7 @@ export const GetLeads: React.FC = () => {
         <div className="flex gap-3">
           {/* Person Edit (Stacked Icon) */}
           <FaUserEdit
-            onClick={() => navigate(`/Leads/AddEditLeads`, { state: row })}
+            onClick={() => navigate(`/Leads/Edit-Leads`, { state: row })}
             className="text-[rgb(159,145,251)]  text-[18px] hover:text-[rgb(105,90,209)] cursor-pointer transition-all duration-200 hover:scale-110"
             title="Edit"
           />
@@ -141,7 +141,7 @@ export const GetLeads: React.FC = () => {
                 <Button
                   type="button"
                   text="Add Lead"
-                  onClick={() => navigate("/Leads/AddEditLeads")}
+                  onClick={() => navigate("/Leads/Add-Leads")}
                   className="bg-[rgb(66,42,213)] text-white  w-full "
                 />
               </div>

@@ -18,8 +18,8 @@ import { LeadForm } from "../pages/Leads/AddEditLeads";
 import Calendar from "../pages/Calendar Management/Calendar";
 import { EventsPage } from "../pages/Calendar Management/EventsPage";
 import { ChangePassword } from "../pages/Auth/ChangePassword";
-import { ForgotPassword } from "../pages/Auth/forgotPassword";
 import { ResetPassword } from "../pages/Auth/ResetPassword";
+import { ForgotPassword } from "../pages/Auth/ForgotPassword";
 
 const AppRouter = () => {
   return (
@@ -41,25 +41,28 @@ const AppRouter = () => {
         <Route path="/candidates/add-candidate" element={<AddCandidate />} />
         <Route path="/interview" element={<InterviewPage />} />
         <Route
-          path="/candidates/candidateDetails"
+          path="/candidates/candidate-Details"
           element={<CandidateDetails />}
         />
         <Route
-          path="/interview/candidateDetails"
+          path="/interview/candidate-Details"
           element={<CandidateDetails />}
         />
         <Route path="/employees" element={<EmployeesPage />} />
-        <Route path="/employees/AddEmployee" element={<EmployeeForm />} />
+        <Route path="/employees/Add-Employee" element={<EmployeeForm />} />
+        <Route path="/employees/Edit-Employee" element={<EmployeeForm />} />
         <Route
-          path="/employees/EmployeeDetails"
+          path="/employees/Employee-Details"
           element={<EmployeeDetails />}
         />
         <Route path="/Leaves" element={<LeavePage />} />
-        <Route path="/Leaves/AddEditLeave" element={<LeaveForm />} />
+        <Route path="/Leaves/Add-Leave" element={<LeaveForm />} />
+        <Route path="/Leaves/Edit-Leave" element={<LeaveForm />} />
         <Route path="/Assets" element={<Assets />} />
 
         <Route path="/Leads" element={<GetLeads />} />
-        <Route path="/Leads/AddEditLeads" element={<LeadForm />} />
+        <Route path="/Leads/Add-Leads" element={<LeadForm />} />
+        <Route path="/Leads/Edit-Leads" element={<LeadForm />} />
         <Route path="/Calendar" element={<Calendar />} />
         <Route path="/Events" element={<EventsPage />} />
         <Route path="/change-password" element={<ChangePassword />} />

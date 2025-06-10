@@ -2,6 +2,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Employee } from "../../../types/IEmployee.type";
 import { BreadCrumbsComponent } from "../../../components/Breadcrumbs/BreadCrumbsComponents";
 import { Button } from "../../../components/ButtonComponent/ButtonComponent";
+import { format } from "date-fns";
 
 export const EmployeeDetails: React.FC = () => {
   const navigate = useNavigate();
@@ -48,7 +49,7 @@ export const EmployeeDetails: React.FC = () => {
                 DOB
               </label>
               <div className="border rounded px-3 py-2 bg-base-200 ">
-                {employee.empDateOfBirth}
+                {format(new Date(employee.empDateOfBirth), "dd-MMMM-yyyy")}
               </div>
             </div>
           </div>
@@ -58,7 +59,11 @@ export const EmployeeDetails: React.FC = () => {
                 Gender
               </label>
               <div className="border rounded px-3 py-2 bg-base-200 ">
-                {employee.empGender == 0 ? "Male" : employee.empGender == 1 ? "Female" : "Other"}
+                {employee.empGender == 0
+                  ? "Male"
+                  : employee.empGender == 1
+                  ? "Female"
+                  : "Other"}
               </div>
             </div>
           </div>
@@ -98,7 +103,7 @@ export const EmployeeDetails: React.FC = () => {
                 Joining Date
               </label>
               <div className="border rounded px-3 py-2 bg-base-200 ">
-                {employee.empDateofJoining}
+                {format(new Date(employee.empDateofJoining), "dd-MMMM-yyyy")}
               </div>
             </div>
           </div>
@@ -112,13 +117,13 @@ export const EmployeeDetails: React.FC = () => {
               </div>
             </div>
           </div>
-          <div className="flex justify-end mr-[100px]">
+          <div className="flex justify-start ml-12">
             <Button
               type="button"
               onClick={() =>
-                navigate(`/employees/AddEmployee`, { state: employee })
+                navigate(`/employees/Edit-Employee`, { state: employee })
               }
-              className="bg-blue-500 w-1/4 text-white mt-4 py-2 px-4 rounded"
+              className="bg-[rgb(66,42,213)] w-1/5 text-white mt-4"
               text="Edit Employee"
             />
           </div>

@@ -100,7 +100,7 @@ export const AssetsPage: React.FC<{
           <FontAwesomeIcon
             icon={faEye}
             onClick={() =>
-              navigate(`/employees/EmployeeDetails`, { state: row })
+              navigate(`/employees/Employee-Details`, { state: row })
             }
             className="text-[rgb(66,42,213)] text-[15px] hover:text-[rgb(43,36,85)] cursor-pointer transition-all duration-200 hover:scale-110"
             title="View"

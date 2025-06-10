@@ -7,7 +7,6 @@ export const EventsComponent = ({
   columns,
   pageName,
 }: CalendarProps) => {
-  console.log(data);
   return (
     <>
       <div className="bg-base-100 min-h-[780px] p-3 rounded-lg shadow-md">

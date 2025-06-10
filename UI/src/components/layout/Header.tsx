@@ -2,8 +2,8 @@ import React, { useState, useRef, useEffect } from "react";
 import ThemeToggle from "./ThemeToggle";
 import UserDropdown from "./UserDropdown"; // Adjust path if needed
 import { useNavigate } from "react-router-dom";
-import { EmployeeDetailsQuery } from "../../services/Employee Management/Employee/EmployeeDetailsQuery";
 import { useQuery } from "@tanstack/react-query";
+import { EmployeeDetailsQuery } from "../../services/Employee Management/Employee/EmployeeDetailsquery";
 
 interface HeaderProps {
   appName?: string;
@@ -19,8 +19,6 @@ const Header: React.FC<HeaderProps> = ({ appName = "MyApp" }) => {
     queryFn: () => EmployeeDetailsQuery(user.empId),
     enabled: !!user?.empId,
   });
-
-  console.log(user);
 
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
@@ -41,7 +39,7 @@ const Header: React.FC<HeaderProps> = ({ appName = "MyApp" }) => {
 
   const handleProfile = () => {
     setShowDropdown(false);
-    navigation(`/employees/EmployeeDetails`, { state: data?.data });
+    navigation(`/employees/Employee-Details`, { state: data?.data });
   };
 
   const handleChangePassword = () => {

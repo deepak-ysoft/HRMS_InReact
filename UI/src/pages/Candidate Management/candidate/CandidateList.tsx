@@ -143,7 +143,7 @@ const CandidateListPage: React.FC = () => {
           <FontAwesomeIcon
             icon={faEye}
             onClick={() =>
-              navigate(`/candidates/candidateDetails`, { state: row })
+              navigate(`/candidates/candidate-Details`, { state: row })
             }
             className="text-[rgb(66,42,213)] text-[15px] hover:text-[rgb(43,36,85)] cursor-pointer transition-all duration-200  hover:scale-110"
             title="View"

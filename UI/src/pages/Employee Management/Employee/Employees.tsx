@@ -104,13 +104,13 @@ const EmployeesPage: React.FC = () => {
           <FontAwesomeIcon
             icon={faEye}
             onClick={() =>
-              navigate(`/employees/EmployeeDetails`, { state: row })
+              navigate(`/employees/Employee-Details`, { state: row })
             }
             className="text-[rgb(66,42,213)] text-[15px] hover:text-[rgb(43,36,85)] cursor-pointer transition-all duration-200 hover:scale-110"
             title="View"
           />
           <FaUserEdit
-            onClick={() => navigate(`/employees/AddEmployee`, { state: row })}
+            onClick={() => navigate(`/employees/Edit-Employee`, { state: row })}
             className="text-[rgb(159,145,251)] text-[18px] hover:text-[rgb(105,90,209)] cursor-pointer transition-all duration-200 hover:scale-110"
             title="Edit"
           />
@@ -145,7 +145,7 @@ const EmployeesPage: React.FC = () => {
               <Button
                 type="button"
                 text="Add Employee"
-                onClick={() => navigate("/employees/AddEmployee")}
+                onClick={() => navigate("/employees/Add-Employee")}
                 className="bg-[rgb(66,42,213)] text-white rounded w-full"
               />
             </div>

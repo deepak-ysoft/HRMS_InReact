@@ -115,48 +115,71 @@ export const FormField = <
         "date",
         "datetime-local",
       ].includes(props.type) &&
-        "register" in props && (
-          <input
-            id={name}
-            className={`${props.className} ${InputBaseStyle}`}
-            type={props.type}
-            placeholder={"placeholder" in props ? props.placeholder : ""}
-            {...props.register(name, props.registerOptions)}
-            disabled={props.disabled}
-            onChange={onChange}
-          />
-        )}
+        "register" in props &&
+        (() => {
+          const registerResult = props.register(name, props.registerOptions);
+          return (
+            <input
+              id={name}
+              className={`${props.className} ${InputBaseStyle}`}
+              type={props.type}
+              placeholder={"placeholder" in props ? props.placeholder : ""}
+              {...registerResult}
+              onChange={(e) => {
+                registerResult.onChange(e);
+                onChange?.(e);
+              }}
+              disabled={props.disabled}
+            />
+          );
+        })()}
 
       {/* Textarea */}
-      {props.type === "textarea" && "register" in props && (
-        <textarea
-          id={name}
-          className={`${props.className} ${TextareaBaseStyle}`}
-          placeholder={"placeholder" in props ? props.placeholder : ""}
-          {...props.register(name, props.registerOptions)}
-          rows={props.rows || 3}
-          disabled={props.disabled}
-          onChange={onChange}
-        />
-      )}
+      {props.type === "textarea" &&
+        "register" in props &&
+        (() => {
+          const registerResult = props.register(name, props.registerOptions);
+          return (
+            <textarea
+              id={name}
+              className={`${props.className} ${TextareaBaseStyle}`}
+              placeholder={"placeholder" in props ? props.placeholder : ""}
+              rows={props.rows || 3}
+              {...registerResult}
+              onChange={(e) => {
+                registerResult.onChange(e);
+                onChange?.(e);
+              }}
+              disabled={props.disabled}
+            />
+          );
+        })()}
 
       {/* Select */}
-      {props.type === "select" && "register" in props && (
-        <select
-          id={name}
-          {...props.register(name, props.registerOptions)}
-          className={`${props.className} ${SelectBaseStyle}`}
-          disabled={props.disabled}
-          onChange={onChange}
-        >
-          <option value="">Select an option</option>
-          {props.options.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-      )}
+      {props.type === "select" &&
+        "register" in props &&
+        (() => {
+          const registerResult = props.register(name, props.registerOptions);
+          return (
+            <select
+              id={name}
+              {...registerResult}
+              className={`${props.className} ${SelectBaseStyle}`}
+              onChange={(e) => {
+                registerResult.onChange(e);
+                onChange?.(e);
+              }}
+              disabled={props.disabled}
+            >
+              <option value="">Select an option</option>
+              {props.options.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          );
+        })()}
 
       {/* File input */}
       {props.type === "file" && (
@@ -168,29 +191,36 @@ export const FormField = <
             const file = e.target.files?.[0] || null;
             const fileValue = file as PathValue<TValues, TFieldName>;
             props.setValue(name, fileValue, { shouldValidate: true });
-            if (onChange) onChange(e);
+            onChange?.(e);
           }}
           disabled={props.disabled}
         />
       )}
 
+      {/* Radio */}
       {props.type === "radio" && "register" in props && (
         <div className="flex gap-4 mt-2">
-          {props.options.map((opt) => (
-            <label
-              key={opt.value}
-              className={`flex items-center gap-1 ${opt.style}`}
-            >
-              <input
-                type="radio"
-                value={opt.value}
-                {...props.register(name, props.registerOptions)}
-                disabled={props.disabled}
-                onChange={onChange}
-              />
-              {opt.label}
-            </label>
-          ))}
+          {props.options.map((opt) => {
+            const registerResult = props.register(name, props.registerOptions);
+            return (
+              <label
+                key={opt.value}
+                className={`flex items-center gap-1 ${opt.style}`}
+              >
+                <input
+                  type="radio"
+                  value={opt.value}
+                  {...registerResult}
+                  onChange={(e) => {
+                    registerResult.onChange(e);
+                    onChange?.(e);
+                  }}
+                  disabled={props.disabled}
+                />
+                {opt.label}
+              </label>
+            );
+          })}
         </div>
       )}
 

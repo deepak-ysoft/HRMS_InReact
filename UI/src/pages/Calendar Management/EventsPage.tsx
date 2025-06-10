@@ -87,7 +87,6 @@ export const EventsPage: React.FC<{
     refetch();
   };
 
-  console.log("data", data);
   const birthdayColumns: Column<
     Record<string, string | number | File | null | undefined>
   >[] = [

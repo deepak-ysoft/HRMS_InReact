@@ -18,16 +18,11 @@ export const MyForm = () => {
   const {
     register,
     setValue,
-    handleSubmit,
     formState: { errors },
   } = useForm<FormValues>();
 
-  const onSubmit = (data: FormValues) => {
-    console.log(data);
-  };
-
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form>
       <FormField
         type="file"
         name="photo"

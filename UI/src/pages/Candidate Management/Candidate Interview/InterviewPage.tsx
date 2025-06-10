@@ -67,14 +67,14 @@ export const InterviewPage = () => {
       render: (row) => {
         return (
           <div onClick={() => handleClick(row as Candidate)}>
-            {dayjs(row.schedule_Interview).format("DD-MM-YYYY hh:mm A")}
+            {dayjs(String(row.schedule_Interview)).format("DD-MM-YYYY hh:mm A")}
           </div>
         );
       },
     },
   ];
   const handleClick = (row: Candidate) => {
-    navigate(`/interview/candidateDetails`, { state: row });
+    navigate(`/interview/candidate-Details`, { state: row });
   };
 
   return (

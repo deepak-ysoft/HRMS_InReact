@@ -74,12 +74,12 @@ export const LeavePage: React.FC = () => {
     {
       header: "Start Date",
       accessor: "startDate",
-      render: (row) => dayjs(row.startDate).format("DD-MM-YYYY hh:mm A"),
+      render: (row) => dayjs(String(row.startDate)).format("DD-MM-YYYY hh:mm A"),
     },
     {
       header: "End Date",
       accessor: "endDate",
-      render: (row) => dayjs(row.endDate).format("DD-MM-YYYY hh:mm A"),
+      render: (row) => dayjs(String(row.endDate)).format("DD-MM-YYYY hh:mm A"),
     },
     {
       header: "Status",
@@ -112,7 +112,7 @@ export const LeavePage: React.FC = () => {
       render: (row) => (
         <div className="flex gap-4">
           <FaUserEdit
-            onClick={() => navigate(`/Leaves/AddEditLeave`, { state: row })}
+            onClick={() => navigate(`/Leaves/Edit-Leave`, { state: row })}
             className="text-[rgb(159,145,251)] text-[18px] hover:text-[rgb(105,90,209)] cursor-pointer transition-all duration-200 hover:scale-110"
             title="Edit"
           />
@@ -140,7 +140,7 @@ export const LeavePage: React.FC = () => {
               <Button
                 type="button"
                 text="Add Employee"
-                onClick={() => navigate("/Leaves/AddEditLeave")}
+                onClick={() => navigate("/Leaves/Add-Leave")}
                 className="bg-[rgb(66,42,213)] text-white rounded w-full"
               />
             </div>
