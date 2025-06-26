@@ -97,7 +97,7 @@ export const EventsPage: React.FC<{
       render: (row) => {
         return (
           <>
-            <p> {dayjs(row.start).format("DD-MM-YYYY")}</p>
+            <p> {dayjs(row.start as string).format("DD-MM-YYYY")}</p>
           </>
         );
       },
@@ -114,7 +114,7 @@ export const EventsPage: React.FC<{
       render: (row) => {
         return (
           <>
-            <p> {dayjs(row.start).format("DD-MM-YYYY hh:mm A")}</p>
+            <p> {dayjs(row.start as string).format("DD-MM-YYYY hh:mm A")}</p>
           </>
         );
       },
@@ -125,7 +125,7 @@ export const EventsPage: React.FC<{
       render: (row) => {
         return (
           <>
-            <p> {dayjs(row.end).format("DD-MM-YYYY hh:mm A")}</p>
+            <p> {dayjs(row.end as string).format("DD-MM-YYYY hh:mm A")}</p>
           </>
         );
       },
@@ -138,12 +138,12 @@ export const EventsPage: React.FC<{
           <div className="flex items-center gap-2">
             <FontAwesomeIcon
               icon={faEye}
-              onClick={() => handleView(row)}
+              onClick={() => handleView(row as ICalendar)}
               className="text-[rgb(66,42,213)] text-[15px] hover:text-[rgb(43,36,85)] cursor-pointer transition-all duration-200 hover:scale-110"
               title="View"
             />
             <FaUserEdit
-              onClick={() => handleEdit(row)}
+              onClick={() => handleEdit(row as ICalendar)}
               className="text-[rgb(159,145,251)] text-[18px] hover:text-[rgb(105,90,209)] cursor-pointer transition-all duration-200 hover:scale-110"
               title="Edit"
             />

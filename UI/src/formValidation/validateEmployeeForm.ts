@@ -1,8 +1,13 @@
 import { Gender } from "../types/Enum/Gender";
 import { UserRoles } from "../types/Enum/UserRoles";
 import { Employee } from "../types/IEmployee.type";
-import { validateConfirmPassword, validateEmail, validatePassword, validatePhoneNumber, validateRequired } from "../utils/validation/ValidationUtils";
-
+import {
+  validateConfirmPassword,
+  validateEmail,
+  validatePassword,
+  validatePhoneNumber,
+  validateRequired,
+} from "../utils/validation/ValidationUtils";
 
 export const validateEmployeeForm = (form: Employee) => {
   const errors: { [key: string]: string } = {};
@@ -39,7 +44,10 @@ export const validateEmployeeForm = (form: Employee) => {
   );
 
   // Gender (enum check)
-  if (!Object.values(Gender).includes(form.empGender)) {
+  if (
+    form.empGender === undefined ||
+    !Object.values(Gender).includes(form.empGender)
+  ) {
     errors.empGender = "Gender is required and must be valid.";
   }
 
@@ -59,7 +67,10 @@ export const validateEmployeeForm = (form: Employee) => {
   errors.empAddress = validateRequired(form.empAddress, "Address");
 
   // Role (enum check)
-  if (!Object.values(UserRoles).includes(form.role)) {
+  if (
+    form.role === undefined ||
+    !Object.values(UserRoles).includes(form.role)
+  ) {
     errors.role = "Role is required and must be valid.";
   }
 
@@ -77,7 +88,7 @@ export const validateEmployeeForm = (form: Employee) => {
 
   // Filter out fields with no errors
   const filteredErrors = Object.fromEntries(
-    Object.entries(errors).filter(([_, value]) => value !== "")
+    Object.entries(errors).filter(([, value]) => value !== "")
   );
 
   return filteredErrors;

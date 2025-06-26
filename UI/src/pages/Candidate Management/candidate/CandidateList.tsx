@@ -175,7 +175,7 @@ const CandidateListPage: React.FC = () => {
   return (
     <>
       <BreadCrumbsComponent />
-      <div className="bg-base-100 min-h-[780px] p-3 rounded-lg shadow-md">
+      <div className="bg-base-100 min-h-[78vh] p-3 rounded-lg shadow-md">
         <div className="mx-5 mt-5 mb-5">
           <div className="grid grid-cols-10 mb-5 items-center">
             <div className="col-span-2">

@@ -55,7 +55,7 @@ export const EventModel: React.FC<EventModelProps> = ({
   const handleFormSubmit = (data: ICalendar) => {
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {
-      formData.append(key, value);
+      formData.append(key, value === undefined || value === null ? "" : value.toString());
     });
 
     onSave(formData);

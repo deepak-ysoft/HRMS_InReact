@@ -20,6 +20,10 @@ import { EventsPage } from "../pages/Calendar Management/EventsPage";
 import { ChangePassword } from "../pages/Auth/ChangePassword";
 import { ResetPassword } from "../pages/Auth/ResetPassword";
 import { ForgotPassword } from "../pages/Auth/ForgotPassword";
+import AttendanceHistoryTable from "../pages/Employee Management/Attendance/AttendanceHistoryTable";
+import EmployeeDocumentManagement from "../pages/Employee Management/EmployeeDocument/EmployeeDocumentManagement";
+import PayrollManagement from "../pages/Employee Management/Payroll/PayrollManagement";
+import PerformanceReviewManagement from "../pages/Employee Management/PerformanceReview/PerformanceReviewManagement";
 
 const AppRouter = () => {
   return (
@@ -59,7 +63,16 @@ const AppRouter = () => {
         <Route path="/Leaves/Add-Leave" element={<LeaveForm />} />
         <Route path="/Leaves/Edit-Leave" element={<LeaveForm />} />
         <Route path="/Assets" element={<Assets />} />
-
+        <Route path="/Attendance" element={<AttendanceHistoryTable />} />
+        <Route
+          path="/EmployeeDocument"
+          element={<EmployeeDocumentManagement />}
+        />
+        <Route path="/Payroll" element={<PayrollManagement />} />
+        <Route
+          path="/PerformanceReview"
+          element={<PerformanceReviewManagement />}
+        />
         <Route path="/Leads" element={<GetLeads />} />
         <Route path="/Leads/Add-Leads" element={<LeadForm />} />
         <Route path="/Leads/Edit-Leads" element={<LeadForm />} />

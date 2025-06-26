@@ -107,7 +107,7 @@ export const AssetsForm = ({
       <form
         onSubmit={handleSubmit(onSubmit)}
         encType="multipart/form-data"
-        className="bg-base-100 p-8 mt-12 rounded-lg shadow-md min-h-[780px]"
+        className="bg-base-100 p-8 mt-12 rounded-lg shadow-md min-h-[78vh]"
       >
         <div className="w-full max-w-2xl pb-5 flex items-center justify-between">
           <h2 className="text-xl font-bold">

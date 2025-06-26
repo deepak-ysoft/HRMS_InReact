@@ -4,16 +4,20 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CandidateDetails_API.Model
 {
-    public class ApplicationDbContext:DbContext
+    public class ApplicationDbContext : DbContext
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext>options):base (options) { }
-        public DbSet<Candidate> candidateDetails { get; set; } // DbSet for Candidate model
-        public DbSet<Leads> leads { get; set; } // DbSet for Leads model
-        public DbSet<Calendar> calendar { get; set; } // DbSet for Calendar model
-        public DbSet<Employee> Employees { get; set; } // DbSet for Employee model
-        public DbSet<EmployeeBirthday> employeeBirthdays { get; set; } // DbSet for Employee model
-        public DbSet<EmployeeLeave> employeesleave { get; set; } // DbSet for EmployeeLeave model
-        public DbSet<EmployeeLeaveVM> employeeLeaveVM { get; set; } // DbSet for EmployeeLeave model
-        public DbSet<EmployeeAsset> EmployeeAssets { get; set; } // DbSet for EmployeeAssets model
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
+        public DbSet<Candidate> candidateDetails { get; set; }
+        public DbSet<Leads> leads { get; set; }
+        public DbSet<Calendar> calendar { get; set; }
+        public DbSet<Employee> Employees { get; set; }
+        public DbSet<EmployeeBirthday> employeeBirthdays { get; set; }
+        public DbSet<EmployeeLeave> employeesleave { get; set; }
+        public DbSet<EmployeeLeaveVM> employeeLeaveVM { get; set; }
+        public DbSet<EmployeeAsset> EmployeeAssets { get; set; }
+        public DbSet<Attendance> Attendances { get; set; }
+        public DbSet<EmployeeDocument> EmployeeDocuments { get; set; }
+        public DbSet<Payroll> Payrolls { get; set; }
+        public DbSet<PerformanceReview> PerformanceReviews { get; set; }
     }
 }

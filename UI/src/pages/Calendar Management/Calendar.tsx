@@ -1,4 +1,9 @@
 // Calendar.tsx
+import "@fullcalendar/daygrid";
+import "@fullcalendar/timegrid";
+import "@fullcalendar/list";
+import "@fullcalendar/bootstrap5";
+
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";

@@ -29,13 +29,20 @@ export function ListTable<
   return (
     <div className="card z-0  ">
       <div className="card-body pt-3 ">
-        <table className="table table-hover">
-          <thead>
-            <tr className="text-[15px]">
+        <table className="table table-hover ">
+          <thead className="font-semibold">
+            <tr className="bg-primary text-primary-content">
               {columns.map((col, index) => (
                 <th
                   key={String(col.accessor ?? col.header)}
-                  className={index === columns.length - 1 ? "text-right" : ""}
+                  className={`
+                      ${index === 0 ? "rounded-tl-lg" : ""}
+                      ${
+                        index === columns.length - 1
+                          ? "rounded-tr-lg  text-right"
+                          : ""
+                      }
+                    `}
                 >
                   <div
                     className={
@@ -48,11 +55,12 @@ export function ListTable<
               ))}
             </tr>
           </thead>
+
           <tbody>
             {data.map((row, idx) => (
               <tr
                 key={idx}
-                className="h-12 hover:bg-base-300 transition-all duration-300 text-[16px]"
+                className="h-10 hover:bg-base-300 transition-all duration-300 text-[16px]"
               >
                 {columns.map((col, index) => (
                   <td

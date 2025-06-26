@@ -56,7 +56,26 @@ const SidebarItems = [
     path: "/contact",
     icon: BiEnvelope,
   },
-
+  {
+    title: "Attendance",
+    path: "Attendance",
+    icon: BiEnvelope,
+  },
+  {
+    title: "EmployeeDocument",
+    path: "EmployeeDocument",
+    icon: BiEnvelope,
+  },
+  {
+    title: "Payroll",
+    path: "Payroll",
+    icon: BiEnvelope,
+  },
+  {
+    title: "PerformanceReview",
+    path: "PerformanceReview",
+    icon: BiEnvelope,
+  },
 ];
 
 export default SidebarItems;

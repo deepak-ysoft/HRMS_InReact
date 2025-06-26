@@ -16,6 +16,8 @@ import { FaUserEdit } from "react-icons/fa";
 import { ConfirmDelete } from "../../../components/DeletionConfirm/ConfirmDelete";
 import { getEmployees } from "../../../services/Employee Management/Employee/GetEmployees.query";
 import { deleteEmployee } from "../../../services/Employee Management/Employee/DeleteEmployee.query";
+import { AttendanceMarkInQuery } from "../../../services/Employee Management/Attendance/AttendanceMarkIn.query";
+import { AttendanceMarkOutQuery } from "../../../services/Employee Management/Attendance/AttendanceMarkOut.query";
 import { toast } from "react-toastify";
 
 const EmployeesPage: React.FC = () => {
@@ -32,6 +34,7 @@ const EmployeesPage: React.FC = () => {
 
   const [showDelete, setShowDelete] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [loadingId, setLoadingId] = useState<number | null>(null);
 
   const handleDeleteClick = (id: number) => {
     setDeleteId(id);
@@ -54,6 +57,28 @@ const EmployeesPage: React.FC = () => {
   const handleDeleteCancel = () => {
     setShowDelete(false);
     setDeleteId(null);
+  };
+
+  const handleMarkAttendance = async (empId: number, action: "in" | "out") => {
+    setLoadingId(empId);
+    const formData = new FormData();
+    formData.append("employeeId", empId.toString());
+    let response;
+    if (action === "in") {
+      response = await AttendanceMarkInQuery(formData);
+    } else {
+      response = await AttendanceMarkOutQuery(formData);
+    }
+    setLoadingId(null);
+    if (response?.isSuccess) {
+      toast.success(
+        `Attendance marked ${
+          action === "in" ? "IN" : "OUT"
+        } for Employee ${empId}`
+      );
+    } else {
+      toast.error(response?.message || "Failed to mark attendance.");
+    }
   };
 
   const columns: Column<
@@ -86,7 +111,7 @@ const EmployeesPage: React.FC = () => {
       accessor: "isActive",
       render: (row) => (
         <span
-          className={`px-3 py-1 rounded-2xl text-black text-sm ${
+          className={`px-3 py-1 rounded-2xl text-black text-sm flex justify-center  ${
             row.isActive
               ? "bg-green-50 border border-green-300"
               : "bg-red-50 border border-red-300"
@@ -94,6 +119,32 @@ const EmployeesPage: React.FC = () => {
         >
           {row.isActive ? "Active" : "Inactive"}
         </span>
+      ),
+    },
+    {
+      header: "Mark In",
+      accessor: "markIn",
+      render: (row) => (
+        <Button
+          type="button"
+          text={loadingId === row.empId ? "Marking In..." : "Mark In"}
+          className="bg-blue-500 text-white py-1 px-3 rounded"
+          disabled={loadingId === row.empId}
+          onClick={() => handleMarkAttendance(Number(row.empId), "in")}
+        />
+      ),
+    },
+    {
+      header: "Mark Out",
+      accessor: "markOut",
+      render: (row) => (
+        <Button
+          type="button"
+          text={loadingId === row.empId ? "Marking Out..." : "Mark Out"}
+          className="bg-gray-500 text-white py-1 px-3 rounded"
+          disabled={loadingId === row.empId}
+          onClick={() => handleMarkAttendance(Number(row.empId), "out")}
+        />
       ),
     },
     {
@@ -128,7 +179,7 @@ const EmployeesPage: React.FC = () => {
   return (
     <>
       <BreadCrumbsComponent />
-      <div className="bg-base-100 min-h-[780px] p-3 rounded-lg shadow-md">
+      <div className="bg-base-100 min-h-[78vh] p-3 rounded-lg shadow-md">
         <div className="mx-5 mt-3 mb-5">
           <div className="grid grid-cols-9 mb-3 items-center">
             <div className="col-span-2">

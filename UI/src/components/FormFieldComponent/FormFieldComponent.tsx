@@ -188,9 +188,10 @@ export const FormField = <
           type="file"
           className={`${FileInputStyle} ${props.className}`}
           onChange={(e) => {
-            const file = e.target.files?.[0] || null;
-            const fileValue = file as PathValue<TValues, TFieldName>;
-            props.setValue(name, fileValue, { shouldValidate: true });
+            const files = e.target.files;
+            const fileListValue = files as PathValue<TValues, TFieldName>;
+            props.setValue(name, fileListValue, { shouldValidate: true });
+
             onChange?.(e);
           }}
           disabled={props.disabled}

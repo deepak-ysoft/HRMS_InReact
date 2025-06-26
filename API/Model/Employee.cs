@@ -41,6 +41,8 @@ namespace CandidateDetails_API.Model
         [NotMapped]
         public IFormFile? Photo { get; set; }
         public UserRoles Role { get; set; }
+        public int BasicSalary { get; set; }
+        public int HRA { get; set; }
         public bool? isActive { get; set; }
 
         // Fields for managing password reset

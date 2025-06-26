@@ -263,7 +263,7 @@ namespace CandidateDetails_API.Controllers
         }
 
         [HttpPost("verify-phone")]
-        public async Task<IActionResult> VerifyPhone([FromBody] PhoneVerifyRequest model)
+        public async Task<IActionResult> VerifyPhone([FromForm] PhoneVerifyRequest model)
         {
             if (string.IsNullOrWhiteSpace(model.PhoneNumber))
                 return BadRequest("Phone number is required.");

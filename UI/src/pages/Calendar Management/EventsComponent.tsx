@@ -9,7 +9,7 @@ export const EventsComponent = ({
 }: CalendarProps) => {
   return (
     <>
-      <div className="bg-base-100 min-h-[780px] p-3 rounded-lg shadow-md">
+      <div className="bg-base-100 min-h-[78vh] p-3 rounded-lg shadow-md">
         <div className="mx-5 mt-3 mb-5">
           <div className=" mb-3 items-center">
             <h1 className="text-2xl font-bold">{pageName}</h1>

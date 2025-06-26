@@ -1,6 +1,8 @@
 using CandidateDetails_API.IServices;
 using CandidateDetails_API.Model;
 using CandidateDetails_API.ServiceContent;
+using HRMS.IServices;
+using HRMS.ServiceContent;
 using HRMS.ViewModel.Request;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Features;
@@ -34,6 +36,11 @@ builder.Services.AddScoped<IAccount, AccountServiceContent>();
 builder.Services.AddScoped<IAuthService, AuthServiceContent>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<ILeadsService, LeadsServiceContent>();
+builder.Services.AddScoped<IAttendanceService, AttendanceServiceContent>();
+builder.Services.AddScoped<IDocumentService, DocumentServiceContent>();
+builder.Services.AddScoped<IPayrollService, PayrollServiceContent>();
+builder.Services.AddScoped<IPerformanceReviewService, PerformanceReviewServiceContent>();
+
 builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
 builder.Services.AddTransient<EmailService>();
 
