@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { useForm } from "react-hook-form";
 import { FormField } from "../FormFieldComponent/FormFieldComponent";
 
@@ -10,6 +10,8 @@ interface SearchBarProps {
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >
   ) => void;
+  showInput: boolean;
+  setShowInput: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 type SearchFormValues = {
@@ -20,9 +22,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
   iconClass,
   className,
   onChange,
+  showInput,
+  setShowInput,
 }) => {
-  const [showInput, setShowInput] = useState(false);
-
   const { setValue, watch, register, trigger } = useForm<SearchFormValues>({
     defaultValues: { searchQuery: "" },
   });
@@ -39,21 +41,17 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
     if (onChange) {
       setTimeout(() => {
-        onChange(e); // Pass the event to the onChange prop
+        onChange(e); // Call parent's onChange
       }, 500);
     }
-  };
-
-  const handleToggleSearch = () => {
-    setShowInput((prev) => !prev); // Toggle the input visibility
   };
 
   const handleClear = () => {
     setValue("searchQuery", "");
     if (onChange) {
-      onChange({ target: { value: "" } } as React.ChangeEvent<
-        HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-      >);
+      onChange({
+        target: { value: "" },
+      } as React.ChangeEvent<HTMLInputElement>);
     }
   };
 
@@ -73,7 +71,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
           } ${className}`}
           register={register}
         />
-        {/* Clear Button (❌) */}
+
+        {/* Clear (X) button */}
         {showInput && searchQuery && (
           <button
             type="button"
@@ -81,15 +80,16 @@ const SearchBar: React.FC<SearchBarProps> = ({
             className="absolute right-2 top-4 text-2xl z-10 -translate-y-1/2 text-gray-500 hover:text-black focus:outline-none"
             title="Clear"
           >
-            &times; {/* Cross symbol */}
+            &times;
           </button>
         )}
       </div>
 
-      {/* Search Icon */}
+      {/* Toggle Search Icon */}
       <button
         className={`${iconClass} btn btn-ghost btn-circle absolute bg-[rgb(202,194,255)] text-black`}
-        onClick={handleToggleSearch}
+        onClick={() => setShowInput(!showInput)}
+        type="button"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"

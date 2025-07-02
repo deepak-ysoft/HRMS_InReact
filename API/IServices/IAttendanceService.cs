@@ -8,6 +8,6 @@ namespace HRMS.IServices
     {
         Task<ApiResponse<AttendanceResponseVM>> MarkIn(MarkAttendanceRequestVM markAttendanceDto);
         Task<ApiResponse<AttendanceResponseVM>> MarkOut(MarkAttendanceRequestVM markAttendanceDto);
-        Task<ApiResponse<dynamic>> GetAttendanceHistory(int page, int pageSize, string SearchValue);
+        Task<ApiResponse<dynamic>> GetAttendanceHistory(int empId, int page, int pageSize, string SearchValue);
     }
 }

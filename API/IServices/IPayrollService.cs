@@ -7,5 +7,6 @@ namespace HRMS.IServices
     {
         Task<ApiResponse<PayrollResponseVM>> GenerateSalary(GeneratePayrollRequestVM generatePayrollDto);
         Task<byte[]> DownloadPayslip(int employeeId, int month, int year);
+        Task<ApiResponse<dynamic>> GetPayslipAsync(int empId, int page, int pageSize, string SearchValue);
     }
 }

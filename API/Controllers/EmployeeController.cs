@@ -100,12 +100,17 @@ namespace CandidateDetails_API.Controllers
         {
             try
             {
-                var employee = await _service.GetEmployeeById(empId); // Get an employee by ID
-                if (employee != null)
-                {
-                    return Ok(new ApiResponse<Employee> { IsSuccess = true, Message = "Employee Details Retrieved.", Data = employee });
-                }
-                return Ok(new ApiResponse<Employee> { IsSuccess = true, Message = "Employee not found" });
+                var data = await _service.GetEmployeeById(empId); // Get an employee by ID
+                if (data.employee != null)
+                    return Ok(
+                        new ApiResponse<dynamic>
+                        {
+                            IsSuccess = true,
+                            Message = "Employee Details Retrieved.",
+                            Data = data
+                        });
+
+                return Ok(new ApiResponse<ApiResponse<dynamic>> { IsSuccess = true, Message = "Employee not found" });
             }
             catch (Exception)
             {
@@ -142,7 +147,7 @@ namespace CandidateDetails_API.Controllers
         {
             try
             {
-                var assets = await _service.GetEmployeeAssets( empId,  page); // This should return IQueryable or IEnumerable
+                var assets = await _service.GetEmployeeAssets(empId, page); // This should return IQueryable or IEnumerable
                 return Ok(new { IsSuccess = true, Data = assets.pagedAssets, Message = "Employee Details Retrieved.", totalCount = assets.totalCount });
             }
             catch (Exception)
@@ -161,13 +166,13 @@ namespace CandidateDetails_API.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            
+
             try
             {
                 var result = await _service.AddUpdateEmployeeAssets(employeeAsset); // Add and update an asset to an employee
                 if (result)
                 {
-                    return Ok(new ApiResponse<string>{ IsSuccess = true, Message = "Asset added/updated successfully" });
+                    return Ok(new ApiResponse<string> { IsSuccess = true, Message = "Asset added/updated successfully" });
                 }
                 return Ok(new ApiResponse<string> { IsSuccess = false, Message = "Failed to add asset" });
             }

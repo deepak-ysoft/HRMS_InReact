@@ -1,6 +1,5 @@
 import { BiGrid, BiEnvelope, BiIdCard } from "react-icons/bi";
-import { FaFileAlt, FaLaptop, FaUserEdit, FaUserTie } from "react-icons/fa";
-import { GoPerson } from "react-icons/go";
+import { FaLaptop, FaUserEdit, FaUserTie } from "react-icons/fa";
 import { MdOutlinePersonPin } from "react-icons/md";
 import { FiUsers } from "react-icons/fi";
 import { RiUserSearchLine } from "react-icons/ri";
@@ -29,8 +28,6 @@ const SidebarItems = [
       { title: "Employee", path: "employees", icon: FaUserTie },
       { title: "Leave", path: "Leaves", icon: FaUserEdit },
       { title: "Assets", path: "Assets", icon: FaLaptop },
-      { title: "Salary Slip", path: "salary-slip", icon: FaFileAlt },
-      { title: "Document Management", path: "salary-slip", icon: FaFileAlt },
     ],
   },
   {
@@ -47,11 +44,6 @@ const SidebarItems = [
     icon: LuUserPen,
   },
   {
-    title: "Profile",
-    path: "/profile",
-    icon: GoPerson,
-  },
-  {
     title: "Contact",
     path: "/contact",
     icon: BiEnvelope,
@@ -64,11 +56,6 @@ const SidebarItems = [
   {
     title: "EmployeeDocument",
     path: "EmployeeDocument",
-    icon: BiEnvelope,
-  },
-  {
-    title: "Payroll",
-    path: "Payroll",
     icon: BiEnvelope,
   },
   {

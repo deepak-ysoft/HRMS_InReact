@@ -1,10 +1,9 @@
 export interface ButtonProps {
-  type: "submit" | "button"; // Specify types for validation
-  text: React.ReactNode;
-  onClick?: () => void;
+  type: "button" | "submit" | "reset";
+  onClick?: () => void | Promise<void>;
+  text?: React.ReactNode; // ✅ allow string or React element
   disabled?: boolean;
   isSubmitting?: boolean;
   className?: string;
-  size?: "small" | "medium" | "large";
   title?: string;
 }

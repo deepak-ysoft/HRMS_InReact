@@ -4,7 +4,9 @@ export const BreadCrumbsComponent = () => {
   const location = useLocation();
 
   // Split pathname and filter empty segments
-  const pathnames = location.pathname.split("/").filter((x) => x);
+  const pathnames = location.pathname
+    .split("/")
+    .filter((x) => x && isNaN(Number(x))); // filters out numeric segments
 
   return (
     <div className="breadcrumbs text-sm mb-4">

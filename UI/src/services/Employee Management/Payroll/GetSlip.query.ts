@@ -1,12 +1,19 @@
 import axiosInstance from "../../../../axiosInstance";
 
 export const GetPayrollSlipQuery = async (
-  employeeId: number,
-  month: number,
-  year: number
+  empId = 0,
+  page = 1,
+  pageSize = 10,
+  searchValue = ""
 ) => {
+  const params = new URLSearchParams({
+    empId: empId.toString(),
+    page: page.toString(),
+    pageSize: pageSize.toString(),
+    searchValue: searchValue,
+  });
   const response = await axiosInstance.get(
-    `/api/Payroll/slip/${employeeId}/${month}/${year}`
+    `/api/Payroll/Get-payslip?${params.toString()}`
   );
   return response.data;
 };

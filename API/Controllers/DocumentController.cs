@@ -24,10 +24,10 @@ namespace HRMS.Controllers
             return Ok(result);
         }
 
-        [HttpGet("GetDocuments/{employeeId}")]
-        public async Task<IActionResult> GetDocuments(int employeeId)
+        [HttpGet("GetDocuments")]
+        public async Task<IActionResult> GetDocuments(int empId, int page = 1, int pageSize = 10, string searchValue = "")
         {
-            var documents = await _documentService.GetDocumentsForEmployee(employeeId);
+            var documents = await _documentService.GetDocumentsForEmployee(empId, page, pageSize, searchValue);
             return Ok(documents);
         }
 
@@ -35,24 +35,14 @@ namespace HRMS.Controllers
         [HttpGet("download/{documentId}")]
         public async Task<IActionResult> Download(int documentId)
         {
-            try
-            {
-                var response = await _documentService.DownloadDocument(documentId);
-                return Ok(new ApiResponse<dynamic>
-                {
-                    IsSuccess = response.IsSuccess,
-                    Message = response.Message,
-                    Data = File(response.Data.fileContents, response.Data.contentType, response.Data.document.FileName)
-                });
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (FileNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
+            var response = await _documentService.DownloadDocument(documentId);
+            if (!response.IsSuccess || response.Data == null)
+                return NotFound(response.Message);
+
+            // Use dynamic safely
+            dynamic data = response.Data;
+
+            return File(data.fileContents, data.contentType, data.FileName);
         }
     }
 }

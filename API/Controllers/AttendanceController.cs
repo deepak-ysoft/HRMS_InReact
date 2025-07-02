@@ -30,10 +30,10 @@ namespace HRMS.Controllers
             return Ok(result);
         }
 
-        [HttpGet("history")]
-        public async Task<IActionResult> GetHistory(int page = 1, int pageSize = 10, string SearchValue = "")
+        [HttpGet("Get-attendance")]
+        public async Task<IActionResult> GetHistory(int empId = 0, int page = 1, int pageSize = 10, string searchValue = "")
         {
-            var data = await _attendanceService.GetAttendanceHistory(page, pageSize, SearchValue);
+            var data = await _attendanceService.GetAttendanceHistory(empId, page, pageSize, searchValue);
             return Ok(data);
         }
     }

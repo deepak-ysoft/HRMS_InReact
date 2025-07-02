@@ -74,32 +74,50 @@ namespace HRMS.ServiceContent
             };
         }
 
-        public async Task<IEnumerable<PerformanceReviewResponseVM>> GetReviewsForEmployee(int employeeId)
+        public async Task<ApiResponse<dynamic>> GetReviewsForEmployee(int empId, int page, int pageSize, string SearchValue)
         {
             // 1. Check if the employee exists
-            var employeeExists = await _context.Employees.AnyAsync(e => e.empId == employeeId);
+            var employeeExists = await _context.Employees.AnyAsync(e => e.empId == empId);
             if (!employeeExists)
-            {
-                throw new KeyNotFoundException($"The employee with ID {employeeId} was not found.");
-            }
+                throw new KeyNotFoundException($"The employee with ID {empId} was not found.");
 
             // 2. Retrieve all reviews for the employee
-            var reviews = await _context.PerformanceReviews
-                .Where(r => r.EmployeeId == employeeId)
-                .OrderByDescending(r => r.ReviewDate) // Show the most recent first
-                .Select(r => new PerformanceReviewResponseVM // Project directly to the DTO
-                {
-                    Id = r.Id,
-                    EmployeeId = r.EmployeeId,
-                    ReviewerId = r.ReviewerId,
-                    Period = r.Period,
-                    Rating = r.Rating,
-                    Comments = r.Comments,
-                    ReviewDate = r.ReviewDate
-                })
+            var query = _context.PerformanceReviews.Where(r => r.EmployeeId == empId).AsQueryable();
+
+            if (!string.IsNullOrEmpty(SearchValue))
+            {
+                string searchTerm = SearchValue.ToLower();
+                query = query.Where(r => r.Comments.ToLower().Contains(searchTerm) ||
+                r.Period.ToLower().Contains(searchTerm) ||
+                r.ReviewDate.ToString().ToLower().Contains(searchTerm));
+            }
+
+            var totalCount = await query.CountAsync(); // Get total count for pagination
+
+            var reviews =await query.OrderByDescending(r => r.ReviewDate) // Show the most recent first
+              .Select(r => new PerformanceReviewResponseVM // Project directly to the DTO
+              {
+                  Id = r.Id,
+                  EmployeeId = r.EmployeeId,
+                  ReviewerId = r.ReviewerId,
+                  Period = r.Period,
+                  Rating = r.Rating,
+                  Comments = r.Comments,
+                  ReviewDate = r.ReviewDate
+              }).Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
 
-            return reviews; // Returns an empty list if no reviews are found, which is correct.
+            return new ApiResponse<dynamic>
+            {
+                IsSuccess = true,
+                Message = "Data retrieved successfully.",
+                Data = new
+                {
+                    salary = reviews,
+                    TotalCount = totalCount
+                }
+            };
         }
     }
 }

@@ -124,8 +124,18 @@ namespace HRMS.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("empId"));
 
-                    b.Property<int>("BasicSalary")
-                        .HasColumnType("int");
+                    b.Property<string>("BankAccountNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BankName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("BasicSalary")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("ConveyanceAllowance")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -133,14 +143,25 @@ namespace HRMS.Migrations
                     b.Property<int?>("CreatedBy")
                         .HasColumnType("int");
 
-                    b.Property<int>("HRA")
-                        .HasColumnType("int");
+                    b.Property<decimal>("HRA")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("IFSCCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ImagePath")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
+
+                    b.Property<decimal>("OtherAllowance")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("PAN")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ResetToken")
                         .HasColumnType("nvarchar(max)");
@@ -150,6 +171,12 @@ namespace HRMS.Migrations
 
                     b.Property<int>("Role")
                         .HasColumnType("int");
+
+                    b.Property<decimal>("SpecialAllowance")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("UAN")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -617,6 +644,8 @@ namespace HRMS.Migrations
 
                     b.HasIndex("EmployeeId");
 
+                    b.HasIndex("ReviewerId");
+
                     b.ToTable("PerformanceReviews");
                 });
 
@@ -661,7 +690,15 @@ namespace HRMS.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("CandidateDetails_API.Model.Employee", "Reviewer")
+                        .WithMany()
+                        .HasForeignKey("ReviewerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Employee");
+
+                    b.Navigation("Reviewer");
                 });
 #pragma warning restore 612, 618
         }

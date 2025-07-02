@@ -31,3 +31,15 @@
 * {
    scrollbar-width: none;
 }
+
+/* Prevent text selection globally */
+body {
+   user-select: none;
+}
+
+/* Allow text selection only in input, textarea, and contenteditable elements */
+input,
+textarea,
+[contenteditable="true"] {
+   user-select: text;
+}

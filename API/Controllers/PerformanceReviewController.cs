@@ -23,10 +23,10 @@ namespace HRMS.Controllers
             return Ok(result);
         }
 
-        [HttpGet("GetReviews/{employeeId}")]
-        public async Task<IActionResult> GetReviews(int employeeId)
+        [HttpGet("GetReviews")]
+        public async Task<IActionResult> GetReviews(int empId = 0, int page = 1, int pageSize = 10, string searchValue = "")
         {
-            var reviews = await _performanceReviewService.GetReviewsForEmployee(employeeId);
+            var reviews = await _performanceReviewService.GetReviewsForEmployee(empId, page, pageSize, searchValue);
             return Ok(reviews);
         }
     }

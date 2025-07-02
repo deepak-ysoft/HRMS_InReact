@@ -29,5 +29,13 @@ namespace HRMS.Controllers
             var fileBytes = await _payrollService.DownloadPayslip(employeeId, month, year);
             return File(fileBytes, "application/pdf", $"payslip_{employeeId}_{month}_{year}.pdf");
         }
+
+
+        [HttpGet("Get-payslip")]
+        public async Task<IActionResult> GetHistory(int empId = 0, int page = 1, int pageSize = 10, string searchValue = "")
+        {
+            var data = await _payrollService.GetPayslipAsync(empId, page, pageSize, searchValue);
+            return Ok(data);
+        }
     }
 }

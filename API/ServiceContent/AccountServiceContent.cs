@@ -85,7 +85,7 @@ namespace CandidateDetails_API.ServiceContent
         }
 
         // Check user is valid or not
-        public async Task<ApiResponse<EmployeeResponseVM>> Login(Login model)
+        public async Task<ApiResponse<EmployeeDetailsResponseVM>> Login(Login model)
         {
             var hasher = new PasswordHasher<Employee>();
 
@@ -95,7 +95,7 @@ namespace CandidateDetails_API.ServiceContent
 
             if (employee == null)
             {
-                return new ApiResponse<EmployeeResponseVM>
+                return new ApiResponse<EmployeeDetailsResponseVM>
                 {
                     IsSuccess = false,
                     Message = "Employee not found.",
@@ -108,7 +108,7 @@ namespace CandidateDetails_API.ServiceContent
 
             if (passwordVerificationResult != PasswordVerificationResult.Success)
             {
-                return new ApiResponse<EmployeeResponseVM>
+                return new ApiResponse<EmployeeDetailsResponseVM>
                 {
                     IsSuccess = false,
                     Message = "Wrong information.",
@@ -118,7 +118,7 @@ namespace CandidateDetails_API.ServiceContent
 
             if (employee.isActive == false)
             {
-                return new ApiResponse<EmployeeResponseVM>
+                return new ApiResponse<EmployeeDetailsResponseVM>
                 {
                     IsSuccess = false,
                     Message = "Your account is not active.",
@@ -127,7 +127,7 @@ namespace CandidateDetails_API.ServiceContent
             }
 
             // Map to Response VM
-            var empVM = new EmployeeResponseVM
+            var empVM = new EmployeeDetailsResponseVM
             {
                 empId = employee.empId,
                 empName = employee.empName,
@@ -144,7 +144,7 @@ namespace CandidateDetails_API.ServiceContent
                 isActive = employee.isActive
             };
 
-            return new ApiResponse<EmployeeResponseVM>
+            return new ApiResponse<EmployeeDetailsResponseVM>
             {
                 IsSuccess = true,
                 Message = "Login successfully.",

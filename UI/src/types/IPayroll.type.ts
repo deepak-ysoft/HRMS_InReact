@@ -18,3 +18,14 @@ export interface PayrollResponseVM {
   year: number;
   netPay: number;
 }
+export interface Payroll {
+  id: number;
+  month: number; // 1 to 12
+  year: number;
+  basicSalary: number;
+  hra: number;
+  bonus: number;
+  deductions: number;
+  netPay: number;
+  payslipPath: string;
+}

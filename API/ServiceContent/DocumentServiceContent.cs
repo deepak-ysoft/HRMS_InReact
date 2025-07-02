@@ -3,6 +3,7 @@ using HRMS.IServices;
 using HRMS.Model;
 using HRMS.ViewModel.Request;
 using HRMS.ViewModel.Response;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 
@@ -38,28 +39,27 @@ namespace HRMS.ServiceContent
                     Message = "Employee not found."
                 };
 
+            // 2. Define a custom storage path under the root of the project (e.g., /UploadedDocuments)
+            var uploadsFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "UploadedDocuments");
+            Directory.CreateDirectory(uploadsFolderPath); // Create directory if not exists
 
-            // 2. Define the storage path and create the directory if it doesn't exist
-            var uploadsFolderPath = Path.Combine(_environment.WebRootPath, "Documents");
-            Directory.CreateDirectory(uploadsFolderPath); // This does nothing if the directory already exists
-
-            // 3. Generate a unique file name to prevent conflicts
+            // 3. Generate a unique file name
             var uniqueFileName = $"{Guid.NewGuid()}_{model.file.FileName}";
             var filePath = Path.Combine(uploadsFolderPath, uniqueFileName);
 
-            // 4. Save the file to the server
+            // 4. Save file to server
             using (var stream = new FileStream(filePath, FileMode.Create))
             {
                 await model.file.CopyToAsync(stream);
             }
 
-            // 5. Create the database record
+            // 5. Create DB record
             var newDocument = new EmployeeDocument
             {
                 EmployeeId = employeeId,
                 DocumentType = model.documentType,
-                FileName = model.file.FileName, // Store the original, user-friendly name
-                FilePath = Path.Combine("Documents", uniqueFileName), // Store the relative path for future retrieval
+                FileName = model.file.FileName,
+                FilePath = Path.Combine("UploadedDocuments", uniqueFileName), // relative path
                 UploadedAt = DateTime.UtcNow,
                 ExpiryDate = model.expiryDate
             };
@@ -67,11 +67,11 @@ namespace HRMS.ServiceContent
             _context.EmployeeDocuments.Add(newDocument);
             await _context.SaveChangesAsync();
 
-            // 6. Return the DTO
+            // 6. Return response DTO
             return new ApiResponse<EmployeeDocumentResponseVM>
             {
                 IsSuccess = true,
-                Message = "Data retrieved successfully.",
+                Message = "Document uploaded successfully.",
                 Data = new EmployeeDocumentResponseVM
                 {
                     Id = newDocument.Id,
@@ -84,10 +84,21 @@ namespace HRMS.ServiceContent
             };
         }
 
-        public async Task<ApiResponse<IEnumerable<EmployeeDocumentResponseVM>>> GetDocumentsForEmployee(int employeeId)
+        public async Task<ApiResponse<dynamic>> GetDocumentsForEmployee(int employeeId, int page, int pageSize, string searchValue)
         {
-            var data = await _context.EmployeeDocuments
-                .Where(d => d.EmployeeId == employeeId)
+            var query = _context.EmployeeDocuments.Where(d => d.EmployeeId == employeeId).AsQueryable();
+
+            // 1. Apply search filter if provided
+            if (!string.IsNullOrEmpty(searchValue))
+            {
+                string searchTerm = searchValue.ToLower();
+                query = query.Where(d => d.DocumentType.ToLower().Contains(searchTerm) ||
+                                         d.FileName.ToLower().Contains(searchTerm));
+            }
+
+            var totalCount = await query.CountAsync();
+
+            var data = await query
                 .OrderByDescending(d => d.UploadedAt)
                 .Select(d => new EmployeeDocumentResponseVM
                 {
@@ -97,53 +108,74 @@ namespace HRMS.ServiceContent
                     FileName = d.FileName,
                     UploadedAt = d.UploadedAt,
                     ExpiryDate = d.ExpiryDate
-                })
+                }).Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
 
-            return new ApiResponse<IEnumerable<EmployeeDocumentResponseVM>>
+            return new ApiResponse<dynamic>
             {
                 IsSuccess = true,
                 Message = "Data retrieved successfully.",
-                Data = data
+                Data = new { documents = data, totalCount }
             };
         }
 
         public async Task<ApiResponse<dynamic>> DownloadDocument(int documentId)
         {
-            // 1. Find the document metadata
             var document = await _context.EmployeeDocuments.FindAsync(documentId);
             if (document == null)
+            {
                 return new ApiResponse<dynamic>
                 {
                     IsSuccess = false,
-                    Message = "Document not found."
+                    Message = "Document not found (null document)."
                 };
+            }
 
-            // 2. Construct the full physical path to the file
-            var physicalPath = Path.Combine(_environment.WebRootPath, document.FilePath);
+            var webRootPath = _environment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory());
+            var physicalPath = Path.Combine(webRootPath, document.FilePath ?? "");
 
-            if (!File.Exists(physicalPath)) return new ApiResponse<dynamic>
+            if (!System.IO.File.Exists(physicalPath))
             {
-                IsSuccess = false,
-                Message = "The document file was not found on the server."
-            };
+                return new ApiResponse<dynamic>
+                {
+                    IsSuccess = false,
+                    Message = $"File not found at: {physicalPath}"
+                };
+            }
 
-            // 3. Read the file into a byte array
-            var fileContents = await File.ReadAllBytesAsync(physicalPath);
+            byte[] fileContents;
+            try
+            {
+                fileContents = await System.IO.File.ReadAllBytesAsync(physicalPath);
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<dynamic>
+                {
+                    IsSuccess = false,
+                    Message = "Error reading file: " + ex.Message
+                };
+            }
 
-            // 4. Determine the MIME type (content type)
             var provider = new FileExtensionContentTypeProvider();
             if (!provider.TryGetContentType(document.FileName, out var contentType))
             {
-                contentType = "application/octet-stream"; // Default MIME type
+                contentType = "application/octet-stream";
             }
 
             return new ApiResponse<dynamic>
             {
-                IsSuccess = false,
-                Message = "Document not found.",
-                Data = (fileContents, contentType, document.FileName)
+                IsSuccess = true,
+                Message = "Success",
+                Data = new
+                {
+                    fileContents,
+                    contentType,
+                    document.FileName
+                }
             };
         }
+
     }
 }

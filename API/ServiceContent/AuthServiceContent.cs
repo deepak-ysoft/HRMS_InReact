@@ -20,7 +20,7 @@ namespace CandidateDetails_API.ServiceContent
         }
 
         // Generate Jwt Token by emp id
-        public async Task<string> GenerateJwtToken(EmployeeResponseVM emp, string role)
+        public async Task<string> GenerateJwtToken(EmployeeDetailsResponseVM emp, string role)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_jwtKey);

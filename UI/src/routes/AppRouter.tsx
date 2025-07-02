@@ -8,7 +8,6 @@ import { Dashboard } from "../pages/Dashboard/Dashboard";
 import CandidateDetails from "../pages/Candidate Management/candidate/CandidateDetails";
 import EmployeesPage from "../pages/Employee Management/Employee/Employees";
 import { EmployeeForm } from "../pages/Employee Management/Employee/AddEditEmployee";
-import { EmployeeDetails } from "../pages/Employee Management/Employee/EmployeeDetails";
 import { LeaveForm } from "../pages/Employee Management/Leave/AddEditLeave";
 import { LeavePage } from "../pages/Employee Management/Leave/Leaves";
 import { Assets } from "../pages/Employee Management/EmployeeAssets/AssistPage";
@@ -22,8 +21,9 @@ import { ResetPassword } from "../pages/Auth/ResetPassword";
 import { ForgotPassword } from "../pages/Auth/ForgotPassword";
 import AttendanceHistoryTable from "../pages/Employee Management/Attendance/AttendanceHistoryTable";
 import EmployeeDocumentManagement from "../pages/Employee Management/EmployeeDocument/EmployeeDocumentManagement";
-import PayrollManagement from "../pages/Employee Management/Payroll/PayrollManagement";
 import PerformanceReviewManagement from "../pages/Employee Management/PerformanceReview/PerformanceReviewManagement";
+import Profile from "../pages/Employee Management/Employee/EmployeeProfile/Profile";
+import PayrollManagement from "../pages/Employee Management/Employee/EmployeeProfile/PayrollManagement";
 
 const AppRouter = () => {
   return (
@@ -55,10 +55,7 @@ const AppRouter = () => {
         <Route path="/employees" element={<EmployeesPage />} />
         <Route path="/employees/Add-Employee" element={<EmployeeForm />} />
         <Route path="/employees/Edit-Employee" element={<EmployeeForm />} />
-        <Route
-          path="/employees/Employee-Details"
-          element={<EmployeeDetails />}
-        />
+        <Route path="/employees/Employee-Details/:id" element={<Profile />} />
         <Route path="/Leaves" element={<LeavePage />} />
         <Route path="/Leaves/Add-Leave" element={<LeaveForm />} />
         <Route path="/Leaves/Edit-Leave" element={<LeaveForm />} />
@@ -68,7 +65,7 @@ const AppRouter = () => {
           path="/EmployeeDocument"
           element={<EmployeeDocumentManagement />}
         />
-        <Route path="/Payroll" element={<PayrollManagement />} />
+        <Route path="/employees/Payroll" element={<PayrollManagement />} />
         <Route
           path="/PerformanceReview"
           element={<PerformanceReviewManagement />}

@@ -29,7 +29,8 @@ const EmployeeDocumentManagement: React.FC = () => {
     setLoading(true);
     try {
       const data = await getDocumentsQuery(employeeId);
-      setDocuments(data);
+      setDocuments(data?.data || []);
+      setLoading(false);
       toast.success(`Documents loaded for employee ID: ${employeeId}`);
     } catch (error) {
       setDocuments([]);
@@ -63,6 +64,7 @@ const EmployeeDocumentManagement: React.FC = () => {
     );
     toast.success("Document uploaded successfully!");
 
+    setUploading(false);
     reset({
       employeeId: data.employeeId,
       documentType: "",
@@ -172,7 +174,7 @@ const EmployeeDocumentManagement: React.FC = () => {
 
         {/* Documents Table */}
         <DocumentsTable
-          documents={documents}
+          documents={documents || []}
           loading={loading}
           onDownload={handleDownloadDocument}
         />

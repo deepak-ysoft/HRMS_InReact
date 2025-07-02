@@ -12,7 +12,7 @@ namespace CandidateDetails_API.IServices
         public Task<ApiResponse<Employee>> AddEmployee(Employee employee); // Add or update an employee
         public Task<ApiResponse<Employee>> UpdateEmployee(EmployeeEditRequestVM employee); // Add or update an employee
         public Task UpdateUserAsync(Employee employee); // Update user
-        public Task<Employee> GetEmployeeById(int id); // Get an employee by id
+        public Task<dynamic> GetEmployeeById(int id); // Get an employee by id
         public Task<Employee> GetUserByResetTokenAsync(string token); // Get user by reset token
         public Task<ApiResponse<string>> DeleteEmployee(int id); // Delete an employee 
         public Task<dynamic> GetEmployeeAssets( int empId, int page );// Get all assets of an employee

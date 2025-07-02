@@ -27,8 +27,7 @@ export const DocumentsTable: React.FC<Props> = ({
       </div>
     );
   }
-
-  if (!documents.length) {
+  if (!documents) {
     return (
       <div className="text-center text-lg text-gray-500 mt-8">
         No documents found for this employee or no employee ID entered.

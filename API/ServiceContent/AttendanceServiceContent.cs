@@ -123,21 +123,23 @@ namespace HRMS.ServiceContent
             };
         }
 
-        public async Task<ApiResponse<dynamic>> GetAttendanceHistory(int page, int pageSize, string SearchValue)
+        public async Task<ApiResponse<dynamic>> GetAttendanceHistory(int empId, int page, int pageSize, string SearchValue)
         {
-
             var query = _context.Attendances.Include(x => x.Employee)
-           .AsQueryable();
+                .AsQueryable();
 
             if (!string.IsNullOrEmpty(SearchValue))
             {
                 string searchTerm = SearchValue.ToLower();
 
                 query = query.Where(c =>
-                    c.Employee.empName.ToLower().Contains(searchTerm) ||
-                    c.Employee.empEmail.ToLower().Contains(searchTerm) ||
-                    c.EmployeeId.ToString().Contains(searchTerm));
+                c.Employee.empName.ToLower().Contains(searchTerm) ||
+                    c.Status.ToLower().Contains(searchTerm) ||
+                    c.Date.ToString().ToLower().Contains(searchTerm)); // Fixed: Convert Date to string before calling ToLower
             }
+
+            if (empId > 0)
+                query = query.Where(a => a.EmployeeId == empId);
 
             var totalCount = query.Count();
 
@@ -152,7 +154,8 @@ namespace HRMS.ServiceContent
                     CheckOut = a.CheckOut,
                     Status = a.Status,
                     Remarks = a.Remarks
-                }).Skip(page).Take(pageSize)
+                }).Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
 
             return new ApiResponse<dynamic>

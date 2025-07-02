@@ -7,8 +7,6 @@ export const UploadDocumentQuery = async (
   documentType: string,
   expiryDate?: Date
 ) => {
-  console.log(employeeId, file, documentType, expiryDate);
-  debugger;
   const formData = new FormData();
   formData.append("file", file);
   formData.append("documentType", documentType);

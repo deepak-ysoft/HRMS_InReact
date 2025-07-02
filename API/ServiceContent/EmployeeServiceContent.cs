@@ -49,22 +49,19 @@ namespace CandidateDetails_API.ServiceContent
             var totalCount = query.Count();
 
             var list = await query
-                .Select(x => new EmployeeResponseVM
-                {
-                    empId = x.empId,
-                    empName = x.empName,
-                    empEmail = x.empEmail,
-                    empNumber = x.empNumber,
-                    empDateOfBirth = x.empDateOfBirth,
-                    empGender = x.empGender.ToString(),
-                    empJobTitle = x.empJobTitle,
-                    empExperience = x.empExperience,
-                    empDateofJoining = x.empDateofJoining,
-                    empAddress = x.empAddress,
-                    ImagePath = x.ImagePath,
-                    Role = x.Role.ToString(),
-                    isActive = x.isActive
-                })
+              .Select(x => new EmployeeResponseVM
+              {
+                  empId = x.empId,
+                  empName = x.empName,
+                  empEmail = x.empEmail,
+                  empNumber = x.empNumber,
+                  empDateOfBirth = x.empDateOfBirth,
+                  empJobTitle = x.empJobTitle,
+                  empExperience = x.empExperience,
+                  ImagePath = x.ImagePath,
+                  isActive = x.isActive,
+
+              })
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -99,32 +96,38 @@ namespace CandidateDetails_API.ServiceContent
             await _context.SaveChangesAsync();
         }
 
-        public async Task<ApiResponse<Employee>> AddEmployee(Employee employee) // Add an employee
+        public async Task<ApiResponse<Employee>> AddEmployee(Employee employee)
         {
-            string fileName = employee.Photo?.FileName != null ? UploadUserPhoto(employee.Photo, "images/employee") : "Default.jpg";
+            // Upload photo
+            string fileName = employee.Photo?.FileName != null
+                ? UploadUserPhoto(employee.Photo, "images/employee")
+                : "uploads\\images\\Default.png";
+
             var hasher = new PasswordHasher<Employee>();
             employee.ImagePath = fileName;
-            if (employee.Role == UserRoles.Admin)
-                employee.isActive = true;
-            else
-                employee.isActive = false;
 
+            // Set active flag based on role
+            employee.isActive = employee.Role == UserRoles.Admin;
+
+            // Hash password
             employee.empPassword = hasher.HashPassword(employee, employee.empPassword);
+
             employee.CreatedBy = _currentUserId;
             employee.UpdatedBy = _currentUserId;
 
             await _context.Employees.AddAsync(employee);
             await _context.SaveChangesAsync();
 
-            string des = $"{employee.empName} birthday";
+            // Create birthday calendar entry
+            var description = $"{employee.empName}'s birthday";
             var calendar = new Calendar
             {
                 Title = CalendarTitle.Birthday,
-                Description = des,
+                Description = description,
                 Start = employee.empDateOfBirth,
                 End = employee.empDateOfBirth,
-                CreatedBy = _currentUserId, // Set the current user ID as the creator
-                UpdatedBy = _currentUserId, // Set the current user ID as the updater
+                CreatedBy = _currentUserId,
+                UpdatedBy = _currentUserId
             };
             await _context.calendar.AddAsync(calendar);
             await _context.SaveChangesAsync();
@@ -132,40 +135,29 @@ namespace CandidateDetails_API.ServiceContent
             var empBirthday = new EmployeeBirthday
             {
                 calId = calendar.CalId,
-                empId = employee.empId,
+                empId = employee.empId
             };
             await _context.employeeBirthdays.AddAsync(empBirthday);
-            int res = await _context.SaveChangesAsync();
+            int result = await _context.SaveChangesAsync();
 
-            if (res > 0)
-                return new ApiResponse<Employee>
-                {
-                    IsSuccess = true,
-                    Message = "Employee Added Successfully.",
-                    Data = employee
-                };
             return new ApiResponse<Employee>
             {
-                IsSuccess = false,
-                Message = "Addition failed.",
+                IsSuccess = result > 0,
+                Message = result > 0 ? "Employee Added Successfully." : "Addition failed.",
                 Data = employee
             };
         }
 
-        public async Task<ApiResponse<Employee>> UpdateEmployee(EmployeeEditRequestVM employee) // Update an employee
+        public async Task<ApiResponse<Employee>> UpdateEmployee(EmployeeEditRequestVM employee)
         {
-            var emailExists = await _context.Employees.AnyAsync(u => u.empEmail.ToLower() == employee.empEmail.ToLower() && u.empId != employee.empId); // To check duplicate emails.
+            var emailExists = await _context.Employees
+                .AnyAsync(u => u.empEmail.ToLower() == employee.empEmail.ToLower() && u.empId != employee.empId);
             if (emailExists)
                 return new ApiResponse<Employee> { IsSuccess = false, Message = "Duplicate Email", Data = null };
 
             var previousEmp = await _context.Employees.AsNoTracking().FirstOrDefaultAsync(x => x.empId == employee.empId);
             if (previousEmp == null)
-                return new ApiResponse<Employee>
-                {
-                    IsSuccess = false,
-                    Message = "Employee not found",
-                    Data = previousEmp
-                };
+                return new ApiResponse<Employee> { IsSuccess = false, Message = "Employee not found" };
 
             string fileName = employee.Photo?.FileName != null
                 ? UploadUserPhoto(employee.Photo, "images/employee")
@@ -174,23 +166,39 @@ namespace CandidateDetails_API.ServiceContent
             if (employee.Photo?.FileName != null)
                 await DeleteUserImageAsync(previousEmp, "images/employee");
 
+            // === Update fields ===
             previousEmp.empName = employee.empName;
             previousEmp.empGender = employee.empGender;
             previousEmp.empNumber = employee.empNumber;
+            previousEmp.empEmail = employee.empEmail;
             previousEmp.empAddress = employee.empAddress;
             previousEmp.empDateOfBirth = employee.empDateOfBirth;
-            previousEmp.Role = employee.Role;
             previousEmp.empDateofJoining = employee.empDateofJoining;
             previousEmp.empJobTitle = employee.empJobTitle;
             previousEmp.empExperience = employee.empExperience;
-
+            previousEmp.Role = employee.Role;
             previousEmp.ImagePath = fileName;
-            previousEmp.isActive = true;
+
+            // 🔁 New fields from latest model
+            previousEmp.BasicSalary = employee.BasicSalary;
+            previousEmp.HRA = employee.HRA;
+            previousEmp.ConveyanceAllowance = employee.ConveyanceAllowance;
+            previousEmp.SpecialAllowance = employee.SpecialAllowance;
+            previousEmp.OtherAllowance = employee.OtherAllowance;
+            previousEmp.PAN = employee.PAN;
+            previousEmp.UAN = employee.UAN;
+            previousEmp.BankAccountNumber = employee.BankAccountNumber;
+            previousEmp.IFSCCode = employee.IFSCCode;
+            previousEmp.BankName = employee.BankName;
+
             previousEmp.UpdatedBy = _currentUserId;
             previousEmp.UpdatedAt = DateTime.Now;
+            previousEmp.isActive = true;
 
             _context.Employees.Update(previousEmp);
             await _context.SaveChangesAsync();
+
+            // === Update calendar ===
             var empBirth = await _context.employeeBirthdays.FirstOrDefaultAsync(x => x.empId == employee.empId);
             if (empBirth != null)
             {
@@ -200,52 +208,39 @@ namespace CandidateDetails_API.ServiceContent
                     cal.Start = employee.empDateOfBirth;
                     cal.End = employee.empDateOfBirth;
                     cal.UpdatedBy = _currentUserId;
-                    cal.UpdatedAt = DateTime.Now; // Update the UpdatedAt field
-                    _context.calendar.Update(cal);
-                    return new ApiResponse<Employee>
-                    {
-                        IsSuccess = true,
-                        Message = "Employee Updated Succassfully.",
-                        Data = previousEmp
-                    };
-                }
-                else
-                {
-                    string des = $"{employee.empName} birthday";
-                    var calendar = new Calendar
-                    {
-                        Title = CalendarTitle.Birthday,
-                        Description = des,
-                        Start = employee.empDateOfBirth,
-                        End = employee.empDateOfBirth,
-                        CreatedBy = _currentUserId, // Set the current user ID as the creator
-                        UpdatedBy = _currentUserId, // Set the current user ID as the updater
-                    };
-                    await _context.calendar.AddAsync(calendar);
+                    cal.UpdatedAt = DateTime.Now;
 
-                    if (await _context.SaveChangesAsync() > 0)
-                    {
-                        var empBirthday = new EmployeeBirthday
-                        {
-                            calId = calendar.CalId,
-                            empId = employee.empId,
-                        };
-                        await _context.employeeBirthdays.AddAsync(empBirthday);
-                        int res = await _context.SaveChangesAsync();
-                        if (res > 0)
-                            return new ApiResponse<Employee>
-                            {
-                                IsSuccess = true,
-                                Message = "Employee Updated Succassfully.",
-                                Data = previousEmp
-                            };
-                    }
+                    _context.calendar.Update(cal);
+                    await _context.SaveChangesAsync();
                 }
             }
+            else
+            {
+                var calendar = new Calendar
+                {
+                    Title = CalendarTitle.Birthday,
+                    Description = $"{employee.empName}'s birthday",
+                    Start = employee.empDateOfBirth,
+                    End = employee.empDateOfBirth,
+                    CreatedBy = _currentUserId,
+                    UpdatedBy = _currentUserId,
+                };
+                await _context.calendar.AddAsync(calendar);
+                await _context.SaveChangesAsync();
+
+                var newEmpBirthday = new EmployeeBirthday
+                {
+                    calId = calendar.CalId,
+                    empId = employee.empId
+                };
+                await _context.employeeBirthdays.AddAsync(newEmpBirthday);
+                await _context.SaveChangesAsync();
+            }
+
             return new ApiResponse<Employee>
             {
-                IsSuccess = false,
-                Message = "Updation failed.",
+                IsSuccess = true,
+                Message = "Employee Updated Successfully.",
                 Data = previousEmp
             };
         }
@@ -274,7 +269,7 @@ namespace CandidateDetails_API.ServiceContent
         }
         public async Task DeleteUserImageAsync(Employee emp, string path) // Marked as async
         {
-            var defaultPath = "Default.jpg";
+            var defaultPath = "Default.png";
             string fileName = Path.GetFileName(emp.ImagePath);
             var filePath = Path.Combine(_env.ContentRootPath + "\\uploads\\", path, fileName ?? string.Empty); // Combine paths
 
@@ -286,17 +281,32 @@ namespace CandidateDetails_API.ServiceContent
             }
         }
 
-        public async Task<Employee> GetEmployeeById(int id) // Get an employee by ID
+        public async Task<dynamic> GetEmployeeById(int id) // Get an employee by ID
         {
             var employee = await _context.Employees.FirstOrDefaultAsync(x => x.empId == id && !x.IsDeleted); // Find the employee by ID
-            return employee; // Return the employee
-        }
 
+            if (employee == null)
+                return employee;
+
+            var attendance = await _context.Attendances.Where(x => x.EmployeeId == employee.empId).ToListAsync();
+            var documents = await _context.EmployeeDocuments.Where(x => x.EmployeeId == employee.empId).ToListAsync();
+            var payroll = await _context.Payrolls.Where(x => x.EmployeeId == employee.empId).ToListAsync();
+            var performance = await _context.PerformanceReviews.Where(x => x.EmployeeId == employee.empId).ToListAsync();
+
+            return new
+            {
+                employee,
+                attendance,
+                documents,
+                payroll,
+                performance
+            };
+        }
 
         public async Task<ApiResponse<string>> DeleteEmployee(int id) // Delete an employee
         {
             var employee = await _context.Employees.FindAsync(id); // Find the employee by ID
-            
+
             if (employee == null)
                 new ApiResponse<string>
                 {

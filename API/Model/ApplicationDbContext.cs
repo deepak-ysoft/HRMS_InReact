@@ -19,5 +19,17 @@ namespace CandidateDetails_API.Model
         public DbSet<EmployeeDocument> EmployeeDocuments { get; set; }
         public DbSet<Payroll> Payrolls { get; set; }
         public DbSet<PerformanceReview> PerformanceReviews { get; set; }
+
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<PerformanceReview>()
+                .HasOne(r => r.Reviewer)
+                .WithMany()
+                .HasForeignKey(r => r.ReviewerId)
+                .OnDelete(DeleteBehavior.Restrict); // Prevent multiple cascade paths
+        }
     }
 }

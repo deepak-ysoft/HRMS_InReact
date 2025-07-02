@@ -27,45 +27,25 @@ export function ListTable<
   T extends Record<string, string | number | File | null | undefined>
 >({ columns, data }: ListTableProps<T>) {
   return (
-    <div className="card z-0  ">
-      <div className="card-body pt-3 ">
-        <table className="table table-hover ">
-          <thead className="font-semibold">
-            <tr className="bg-primary text-primary-content">
-              {columns.map((col, index) => (
-                <th
-                  key={String(col.accessor ?? col.header)}
-                  className={`
+    <div className="card z-0">
+      <div className="card-body pt-3 overflow-x-auto">
+        {/* ✅ Scrollable wrapper for small screens */}
+        <div className="w-full overflow-x-auto">
+          <table className="table w-full border-separate border-spacing-y-2">
+            <thead className="font-semibold">
+              <tr className="bg-primary text-primary-content">
+                {columns.map((col, index) => (
+                  <th
+                    key={String(col.accessor ?? col.header)}
+                    className={`
+                      px-4 py-2 whitespace-nowrap
                       ${index === 0 ? "rounded-tl-lg" : ""}
                       ${
                         index === columns.length - 1
-                          ? "rounded-tr-lg  text-right"
+                          ? "rounded-tr-lg text-center"
                           : ""
                       }
                     `}
-                >
-                  <div
-                    className={
-                      index === columns.length - 1 ? "flex justify-center" : ""
-                    }
-                  >
-                    {col.header}
-                  </div>
-                </th>
-              ))}
-            </tr>
-          </thead>
-
-          <tbody>
-            {data.map((row, idx) => (
-              <tr
-                key={idx}
-                className="h-10 hover:bg-base-300 transition-all duration-300 text-[16px]"
-              >
-                {columns.map((col, index) => (
-                  <td
-                    key={String(col.accessor ?? col.header)}
-                    className={index === columns.length - 1 ? "text-right" : ""}
                   >
                     <div
                       className={
@@ -74,26 +54,52 @@ export function ListTable<
                           : ""
                       }
                     >
-                      {col.render
-                        ? col.render(row)
-                        : typeof row[col.accessor as keyof T] === "object" &&
-                          row[col.accessor as keyof T] !== null
-                        ? (row[col.accessor as keyof T] as File).name
-                        : row[col.accessor as keyof T]?.toString() ?? ""}
+                      {col.header}
                     </div>
-                  </td>
+                  </th>
                 ))}
               </tr>
-            ))}
-            {data.length === 0 && (
-              <tr>
-                <td colSpan={columns.length} className="text-center">
-                  No records found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+
+            <tbody>
+              {data.map((row, idx) => (
+                <tr
+                  key={idx}
+                  className="hover:bg-base-300 transition-all duration-300 text-md"
+                >
+                  {columns.map((col, index) => (
+                    <td
+                      key={String(col.accessor ?? col.header)}
+                      className="px-4 py-2 whitespace-nowrap"
+                    >
+                      <div
+                        className={
+                          index === columns.length - 1
+                            ? "flex justify-center"
+                            : ""
+                        }
+                      >
+                        {col.render
+                          ? col.render(row)
+                          : typeof row[col.accessor as keyof T] === "object" &&
+                            row[col.accessor as keyof T] !== null
+                          ? (row[col.accessor as keyof T] as File).name
+                          : row[col.accessor as keyof T]?.toString() ?? ""}
+                      </div>
+                    </td>
+                  ))}
+                </tr>
+              ))}
+              {data.length === 0 && (
+                <tr>
+                  <td colSpan={columns.length} className="text-center py-4">
+                    No records found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

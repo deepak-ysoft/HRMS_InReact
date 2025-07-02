@@ -39,7 +39,9 @@ const Header: React.FC<HeaderProps> = ({ appName = "MyApp" }) => {
 
   const handleProfile = () => {
     setShowDropdown(false);
-    navigation(`/employees/Employee-Details`, { state: data?.data });
+    navigation(`/employees/Employee-Details`, {
+      state: data?.data?.employee?.empId,
+    });
   };
 
   const handleChangePassword = () => {
@@ -97,11 +99,14 @@ const Header: React.FC<HeaderProps> = ({ appName = "MyApp" }) => {
         >
           <div className="avatar">
             <div className="w-10 rounded-full text-white pt-[2px] bg-[rgb(159,145,251)] flex items-center justify-center">
-              {data?.data?.imagePath ? (
-                <img src={apiPath + data?.data.imagePath} alt="User Avatar" />
+              {data?.data?.employee?.imagePath ? (
+                <img
+                  src={apiPath + data?.data?.employee?.imagePath}
+                  alt="User Avatar"
+                />
               ) : (
                 <span className="text-2xl font-semibold">
-                  {data?.data?.empName?.charAt(0).toUpperCase()}
+                  {data?.data?.employee?.empName?.charAt(0).toUpperCase()}
                 </span>
               )}
             </div>

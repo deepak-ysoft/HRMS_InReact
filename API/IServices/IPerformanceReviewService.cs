@@ -6,6 +6,6 @@ namespace HRMS.IServices
     public interface IPerformanceReviewService
     {
         Task<PerformanceReviewResponseVM> CreateReview(CreateReviewRequestVM createReviewDto);
-        Task<IEnumerable<PerformanceReviewResponseVM>> GetReviewsForEmployee(int employeeId);
+        Task<ApiResponse<dynamic>> GetReviewsForEmployee(int empId, int page, int pageSize, string SearchValue);
     }
 }

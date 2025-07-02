@@ -48,8 +48,7 @@ export const LeadForm = () => {
       reset(defaultValues);
       navigate("/Leads");
     },
-    onError: () => {
-    },
+    onError: () => {},
   });
 
   const onSubmit = (data: ILeads) => {
@@ -135,18 +134,20 @@ export const LeadForm = () => {
             error={errors.remarks}
           />
         </div>
-        <Button
-          type="submit"
-          text={isSubmitting ? "Submitting..." : "Submit"}
-          className="bg-blue-500 text-white mt-10 py-2 px-4 rounded disabled:opacity-50"
-          disabled={isSubmitting}
-        />
-        <Button
-          type="button"
-          text="Reset"
-          onClick={() => reset(defaultValues)}
-          className="bg-gray-500 text-white mt-10 py-2 px-4 rounded ml-4"
-        />
+        <div className="flex">
+          <Button
+            type="submit"
+            text={isSubmitting ? "Submitting..." : "Submit"}
+            className="bg-[rgb(66,42,213)] text-white mt-10 py-2 px-4 rounded disabled:opacity-50"
+            disabled={isSubmitting}
+          />
+          <Button
+            type="button"
+            text="Reset"
+            onClick={() => reset(defaultValues)}
+            className="bg-gray-500 text-white mt-10 py-2 px-4 rounded ml-4"
+          />
+        </div>
       </form>
     </>
   );

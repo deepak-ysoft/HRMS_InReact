@@ -126,27 +126,29 @@ export const AssetsPage: React.FC<{
   return (
     <>
       <BreadCrumbsComponent />
-      <div className="bg-base-100 min-h-[78vh] p-3 rounded-lg shadow-md">
-        <div className="mx-5 mt-3 mb-5">
+      <div className="bg-base-100 min-h-[78vh] p-3 rounded-lg shadow-md flex flex-col justify-between">
+        <div className="mx-5 mt-3">
           <div className=" mb-3 items-center">
             <h1 className="text-2xl font-bold">Assets</h1>
           </div>
         </div>
-        {isPending ? (
-          <div>Loading...</div>
-        ) : (
-          <>
-            <ListTable columns={columns} data={data.data || []} />
-            <span className="flex justify-end items-center gap-2 mt-3 mr-8">
-              <Pagination
-                page={page}
-                pageSize={10}
-                totalCount={data?.totalCount || 0}
-                onPageChange={setPage}
-              />
-            </span>
-          </>
-        )}
+        <div className="flex-grow">
+          {isPending ? (
+            <div>Loading...</div>
+          ) : (
+            <>
+              <ListTable columns={columns} data={data.data || []} />
+            </>
+          )}
+        </div>{" "}
+        <div className="flex justify-end mr-8">
+          <Pagination
+            page={page}
+            pageSize={10}
+            totalCount={data?.totalCount || 0}
+            onPageChange={setPage}
+          />
+        </div>
       </div>
       {showDelete && (
         <div className="fixed inset-0 flex items-center justify-center z-50 animate-slide-in-fade-out">
